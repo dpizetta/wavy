@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mw_wavy.ui'
 #
-# Created: Sat Feb 28 13:33:46 2015
+# Created: Sat Feb 28 17:32:05 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -80,6 +80,8 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName("menuHelp")
         self.menuAcqusition = QtGui.QMenu(self.menubar)
         self.menuAcqusition.setObjectName("menuAcqusition")
+        self.menuTools = QtGui.QMenu(self.menubar)
+        self.menuTools.setObjectName("menuTools")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -135,6 +137,8 @@ class Ui_MainWindow(object):
         icon8.addPixmap(QtGui.QPixmap(":/icons/images/new.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionNew.setIcon(icon8)
         self.actionNew.setObjectName("actionNew")
+        self.actionConvert_Wav_to_Dat = QtGui.QAction(MainWindow)
+        self.actionConvert_Wav_to_Dat.setObjectName("actionConvert_Wav_to_Dat")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addSeparator()
@@ -147,8 +151,10 @@ class Ui_MainWindow(object):
         self.menuAcqusition.addAction(self.actionRecord)
         self.menuAcqusition.addAction(self.actionPause)
         self.menuAcqusition.addAction(self.actionStop)
+        self.menuTools.addAction(self.actionConvert_Wav_to_Dat)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuAcqusition.menuAction())
+        self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.toolBarAcquisition.addAction(self.actionRecord)
         self.toolBarAcquisition.addAction(self.actionPause)
@@ -177,6 +183,7 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAcqusition.setTitle(QtGui.QApplication.translate("MainWindow", "Acqusition", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuTools.setTitle(QtGui.QApplication.translate("MainWindow", "Tools", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBarAcquisition.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBarFile.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar_2", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
@@ -197,5 +204,6 @@ class Ui_MainWindow(object):
         self.actionPause.setShortcut(QtGui.QApplication.translate("MainWindow", "Alt+P", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNew.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+N", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionConvert_Wav_to_Dat.setText(QtGui.QApplication.translate("MainWindow", "Convert .wav to .dat", None, QtGui.QApplication.UnicodeUTF8))
 
 import rc_wavy_rc

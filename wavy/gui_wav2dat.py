@@ -19,15 +19,12 @@ from sys import argv, exit
 import wave
 
 from construct import *
-from mw_wav2dat import Ui_MainWindow
+from dlg_wav2dat import Ui_Dialog
 
 
 qobject = QObject()
 
-__version__ = '1.0'
-
-
-class ConvertWave2Data(QMainWindow):
+class ConvertWave2Data(QDialog):
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -35,7 +32,7 @@ class ConvertWave2Data(QMainWindow):
         # graphical interface
         QMainWindow.__init__(self, parent)
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
         # properties
@@ -52,15 +49,14 @@ class ConvertWave2Data(QMainWindow):
 
         # to read
         self.ui.pushButton_path_to_read.clicked.connect(lambda: self.setPathToReadWave(''))
-        self.ui.actionOpen_WAV.triggered.connect(self.setPathToReadWave)
 
         # options
         self.ui.checkBox_same_name.stateChanged.connect(self.changePathToWrite)
 
         # to write
         self.ui.pushButton_path_to_write.clicked.connect(lambda: self.setPathToWriteData(''))
-        self.ui.actionSave_DAT.triggered.connect(self.writeData)
-        self.ui.pushButton_convert.clicked.connect(lambda: self.writeData(self.path_to_write))
+        self.ui.pushButtonConvert.clicked.connect(lambda: self.writeData(self.path_to_write))
+        self.ui.pushButtonCancel.clicked.connect(self.close)
 
     def changePathToWrite(self, use_same_path=0):
         """Change the path on the interface."""
@@ -108,7 +104,6 @@ class ConvertWave2Data(QMainWindow):
 
         # Reading the file and load the values
         try:
-            # read file
             wav_file = wave.open(self.path_to_read, 'rb')
         except Exception, e:
             QMessageBox.critical(QApplication.topLevelWidgets()[0],
@@ -133,7 +128,6 @@ class ConvertWave2Data(QMainWindow):
         # Extracting data
         try:
             self.frames = wav_file.readframes(self.number_of_frames)
-
         except Exception, e:
             QMessageBox.critical(QApplication.topLevelWidgets()[0],
                                  qobject.tr('Problem with WAVE data.'),
@@ -184,7 +178,7 @@ class ConvertWave2Data(QMainWindow):
 
         QMessageBox.information(QApplication.topLevelWidgets()[0],
                                 qobject.tr('Information.'),
-                                qobject.tr('The conversion was concluded.'),
+                                qobject.tr('Conversion concluded successfully.'),
                                 QMessageBox.Ok)
 
         file_.close()
@@ -195,7 +189,6 @@ class ConvertWave2Data(QMainWindow):
         return True
 
 
-
 def main():
 
     app = QApplication(argv)
@@ -203,4 +196,5 @@ def main():
     window.show()
     exit(app.exec_())
 
-main()
+if __name__ == "__main__":
+    main()

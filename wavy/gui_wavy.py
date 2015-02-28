@@ -19,6 +19,7 @@ import sys
 import time
 
 from mw_wavy import Ui_MainWindow
+from gui_wav2dat import ConvertWave2Data
 import numpy as np
 import pyqtgraph as pg
 import rc_wavy_rc
@@ -115,6 +116,8 @@ class MainWindow(QMainWindow):
         self.ui.actionRecord.triggered.connect(self.record)
         self.ui.actionPause.triggered.connect(self.pause)
         self.ui.actionStop.triggered.connect(self.stop)
+        # Tools actions
+        self.ui.actionConvert_Wav_to_Dat.triggered.connect(self.callTools)
         # Program actions
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
@@ -123,6 +126,10 @@ class MainWindow(QMainWindow):
         self.ui.horizontalLayout.addWidget(self.plot_widget)
         # Inputs
         #self.ui.doubleSpinBoxSampleInterval.valueChanged.connect()
+        
+    def callTools(self):
+        dlg = ConvertWave2Data()
+        dlg.exec_()
 
     def record(self):
         """Starts acquiring."""
