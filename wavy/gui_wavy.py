@@ -9,7 +9,7 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 """
 
 
-from PyQt4.QtCore import QTimer
+from PyQt4.QtCore import QTimer, Qt
 from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox
 from PyQt4 import uic
 import collections
@@ -18,11 +18,11 @@ import random
 import sys
 import time
 
-from mw_wavy import Ui_MainWindow
+from wavy.mw_wavy import Ui_MainWindow
 from gui_wav2dat import ConvertWave2Data
 import numpy as np
 import pyqtgraph as pg
-import rc_wavy_rc
+import wavy.images.rc_wavy_rc
 
 
 __version__ = "0.1"
@@ -44,14 +44,15 @@ def main(argv):
     pixmap = QPixmap("images/symbol.png")
     splash = QSplashScreen(pixmap)
     splash.show()
+    splash.repaint()
     splash.showMessage("Loading...")
     wavy.processEvents()
     splash.showMessage("Starting...")
     wavy.processEvents()
     window = MainWindow()
-    time.sleep(1)
-    #window.ui.showMaximized()
+    # window.ui.showMaximized()
     window.showMaximized()
+    time.sleep(1)
     splash.finish(window)
     return wavy.exec_()
 
@@ -60,15 +61,15 @@ class DynamicPlotter(pg.PlotWidget):
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
         super(DynamicPlotter, self).__init__(parent)
-        self.initData(sample_interval, time_window)
+        self.sample_interval = sample_interval
+        self.time_window = time_window
+        self.initData()
         self.showGrid(x=True, y=True)
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
-        self.curve = self.plot(self.x, self.y, pen=(0, 255, 255))
+        self.curve = self.plot(self.x, self.y, pen=(0, 255, 255), antialias=True)
 
-    def initData(self, sample_interval=0.01, time_window=20.):
-        self.sample_interval = sample_interval
-        self.time_window = time_window
+    def initData(self):
         self._interval = int(self.sample_interval * 1000)
         self._bufsize = int(self.time_window / self.sample_interval)
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
@@ -77,6 +78,16 @@ class DynamicPlotter(pg.PlotWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
         self.timer.start(self._interval)
+
+    def setSampleInterval(self, sample_interval):
+        self.sample_interval = sample_interval
+        self.curve.clear()
+        self.initData()
+
+    def setTimeWindow(self, time_window):
+        self.time_window = time_window
+        self.curve.clear()
+        self.initData()
 
     def getdata(self):
         frequency = 0.5
@@ -88,6 +99,9 @@ class DynamicPlotter(pg.PlotWidget):
         self.databuffer.append(self.getdata())
         self.y[:] = self.databuffer
         self.curve.setData(self.x, self.y)
+
+    def setCurveColor(self, r, g, b):
+        self.curve.setPen(pg.mkPen(color=(r, g, b)))
 
 
 class MainWindow(QMainWindow):
@@ -114,8 +128,12 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_As.triggered.connect(self.saveFileAs)
         # Acquire actions
         self.ui.actionRecord.triggered.connect(self.record)
+        self.ui.actionRecord.setCheckable(True)
         self.ui.actionPause.triggered.connect(self.pause)
+        self.ui.actionPause.setCheckable(True)
+        self.ui.actionPause.setEnabled(False)
         self.ui.actionStop.triggered.connect(self.stop)
+        self.ui.actionStop.setEnabled(False)
         # Tools actions
         self.ui.actionConvert_Wav_to_Dat.triggered.connect(self.callTools)
         # Program actions
@@ -125,20 +143,40 @@ class MainWindow(QMainWindow):
         self.plot_widget = DynamicPlotter(sample_interval=0.01, time_window=20.)
         self.ui.horizontalLayout.addWidget(self.plot_widget)
         # Inputs
-        #self.ui.doubleSpinBoxSampleInterval.valueChanged.connect()
-        
+        self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
+        self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
+        self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
+        self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
+        self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
+
+    def setSampleRate(self, sample_interval):
+        self.ui.doubleSpinBoxSampleRate.setValue(1. / sample_interval)
+
+    def setSampleInterval(self, sample_rate):
+        self.ui.doubleSpinBoxSampleInterval.setValue(1. / sample_rate)
+
     def callTools(self):
         dlg = ConvertWave2Data()
         dlg.exec_()
 
     def record(self):
         """Starts acquiring."""
+        self.plot_widget.setCurveColor(255, 0, 0)
+        self.ui.actionPause.setEnabled(True)
+        self.ui.actionStop.setEnabled(True)
 
     def stop(self):
         """Stops acquiring."""
+        self.plot_widget.setCurveColor(0, 255, 255)
+        self.ui.actionRecord.setChecked(False)
+        self.ui.actionPause.setChecked(False)
+        self.ui.actionPause.setEnabled(False)
+        self.ui.actionStop.setEnabled(False)
 
     def pause(self):
         """Pauses acquiring."""
+        self.plot_widget.setCurveColor(255, 153, 0)
+
 
     def clearGraph(self):
         """Clear graph"""

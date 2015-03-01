@@ -2,12 +2,12 @@
 
 # Form implementation generated from reading ui file 'dlg_wav2dat.ui'
 #
-# Created: Sat Feb 28 17:32:05 2015
+# Created: Sun Mar  1 10:00:58 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from PySide import QtCore, QtGui
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):

@@ -19,7 +19,7 @@ from sys import argv, exit
 import wave
 
 from construct import *
-from dlg_wav2dat import Ui_Dialog
+from wavy.dlg_wav2dat import Ui_Dialog
 
 
 qobject = QObject()
