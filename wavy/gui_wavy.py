@@ -1,6 +1,6 @@
 """Wavy main window.
 
-Wavy is a simple program that allows you to acquire sound from mic and save as .dat.
+Wavy is a simple program that allows you to acquire sound from mic and save as .wav or .dat.
 
 :authors: Daniel Cosmo Pizetta
 :contact: daniel.pizetta@usp.br
@@ -9,26 +9,25 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 """
 
 
-from PyQt4.QtCore import QTimer, Qt
+from PyQt4.QtCore import QTimer
 from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox
-from PyQt4 import uic
 import collections
 import math
 import random
 import sys
 import time
 
-from wavy.mw_wavy import Ui_MainWindow
 from gui_wav2dat import ConvertWave2Data
 import numpy as np
 import pyqtgraph as pg
 import wavy.images.rc_wavy_rc
+from wavy.mw_wavy import Ui_MainWindow
 
 
 __version__ = "0.1"
 __app_name__ = "Wavy"
 
-about = '<h3>{} v.{}</h3><p>Author: Daniel Cosmo Pizetta<br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .dat.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a></p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015</p>'.format(__app_name__, __version__)
+about = '<h3>{} v.{}</h3><p>Author: Daniel Cosmo Pizetta<br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .wav or .dat.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
 
 
 def main(argv):
@@ -50,11 +49,68 @@ def main(argv):
     splash.showMessage("Starting...")
     wavy.processEvents()
     window = MainWindow()
-    # window.ui.showMaximized()
     window.showMaximized()
-    time.sleep(1)
+    time.sleep(0)
     splash.finish(window)
     return wavy.exec_()
+
+
+class Plotter(pg.PlotWidget):
+
+    def __init__(self, sample_interval=0.01, time_window=20., parent=None):
+        super(Plotter, self).__init__(parent)
+        self.sample_interval = sample_interval
+        self.time_window = time_window
+        self.showGrid(x=True, y=True)
+        self.setLabel('top', 'Recorded data')
+        self.setLabel('left', 'Amplitude', 'V')
+        self.setLabel('bottom', 'Time', 's')
+        self.curve = None
+
+    def initData(self):
+        self._interval = int(self.sample_interval * 1000)
+        self._bufsize = int(self.time_window / self.sample_interval)
+        self.x = np.linspace(0.0, self.time_window, self._bufsize)
+        self.setDownsampling(mode='peak')
+        self.setClipToView(True)
+        self.data = np.empty(5)
+        self.ptr = 0
+        self.curve = self.plot(self.x[:self.ptr], self.data[:self.ptr], antialias=True)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updateplot)
+        self.timer.start(self._interval)
+
+    def setSampleInterval(self, sample_interval):
+        self.sample_interval = sample_interval
+        self.curve.clear()
+        self.initData()
+
+    def setTimeWindow(self, time_window):
+        self.time_window = time_window
+        self.curve.clear()
+        self.initData()
+
+    def getdata(self):
+        frequency = 0.5
+        noise = random.normalvariate(0., 1.)
+        new = 20. * math.sin(time.time() * frequency * 2 * math.pi) + noise
+        return new
+
+    def updateplot(self):
+        self.data[self.ptr] = self.getdata()
+        self.x[self.ptr + 1] = self.x[self.ptr] + self.sample_interval
+        self.ptr += 1
+        if self.ptr >= self.data.shape[0]:
+            tmp = self.data
+            xtmp = self.x
+            self.data = np.empty(self.data.shape[0] + 10)
+            self.x = np.empty(self.x.shape[0] + 10)
+            self.data[:tmp.shape[0]] = tmp
+            self.x[:xtmp.shape[0]] = xtmp
+            self.curve.setData(self.x[:self.ptr], self.data[:self.ptr])
+
+    def setCurveColor(self, r, g, b):
+        self.curve.setPen(pg.mkPen(color=(r, g, b)))
 
 
 class DynamicPlotter(pg.PlotWidget):
@@ -63,11 +119,11 @@ class DynamicPlotter(pg.PlotWidget):
         super(DynamicPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
         self.time_window = time_window
-        self.initData()
         self.showGrid(x=True, y=True)
+        self.setLabel('top', 'Input Real Time')
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
-        self.curve = self.plot(self.x, self.y, pen=(0, 255, 255), antialias=True)
+        self.curve = None
 
     def initData(self):
         self._interval = int(self.sample_interval * 1000)
@@ -78,6 +134,8 @@ class DynamicPlotter(pg.PlotWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
         self.timer.start(self._interval)
+        self.curve = self.plot(self.x, self.y, pen=(0, 255, 255), antialias=True)
+        self.curve.clear()
 
     def setSampleInterval(self, sample_interval):
         self.sample_interval = sample_interval
@@ -96,7 +154,8 @@ class DynamicPlotter(pg.PlotWidget):
         return new
 
     def updateplot(self):
-        self.databuffer.append(self.getdata())
+        stp = self.getdata()
+        self.databuffer.append(stp)
         self.y[:] = self.databuffer
         self.curve.setData(self.x, self.y)
 
@@ -115,7 +174,6 @@ class MainWindow(QMainWindow):
         :type param: QWidget()
         """
         super(MainWindow, self).__init__(parent)
-        #self.ui = uic.loadUi('mw_wavy.ui')
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle(__app_name__ + '  ' + __version__)
@@ -123,7 +181,8 @@ class MainWindow(QMainWindow):
         # Connecting actions
         # File actions
         self.ui.actionNew.triggered.connect(self.newFile)
-        self.ui.actionOpen.triggered.connect(self.openFile)
+        # For now it cannot open a file
+        # self.ui.actionOpen.triggered.connect(self.openFile)
         self.ui.actionSave.triggered.connect(self.saveFile)
         self.ui.actionSave_As.triggered.connect(self.saveFileAs)
         # Acquire actions
@@ -141,7 +200,10 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
         # Plot widget
         self.plot_widget = DynamicPlotter(sample_interval=0.01, time_window=20.)
-        self.ui.horizontalLayout.addWidget(self.plot_widget)
+        self.plot_widget.initData()
+        self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
+        self.plot_widget_rec = Plotter(sample_interval=0.01, time_window=5.)
+        self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
         # Inputs
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
@@ -150,9 +212,13 @@ class MainWindow(QMainWindow):
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
     def setSampleRate(self, sample_interval):
+        """Sets sample rate.
+        """
         self.ui.doubleSpinBoxSampleRate.setValue(1. / sample_interval)
 
     def setSampleInterval(self, sample_rate):
+        """Sets sample interval.
+        """
         self.ui.doubleSpinBoxSampleInterval.setValue(1. / sample_rate)
 
     def callTools(self):
@@ -160,29 +226,71 @@ class MainWindow(QMainWindow):
         dlg.exec_()
 
     def record(self):
-        """Starts acquiring."""
-        self.plot_widget.setCurveColor(255, 0, 0)
+        """Starts acquiring.
+        """
+
+        if self.plot_widget_rec.curve is not None:
+            self.plot_widget_rec.curve.clear()
+        self.plot_widget_rec.initData()
+        self.plot_widget_rec.setCurveColor(255, 0, 0)
+        self.plot_widget_rec.setLabel('top', 'Recording ...')
+        # Set enabled buttons
         self.ui.actionPause.setEnabled(True)
         self.ui.actionStop.setEnabled(True)
-
-    def stop(self):
-        """Stops acquiring."""
-        self.plot_widget.setCurveColor(0, 255, 255)
-        self.ui.actionRecord.setChecked(False)
-        self.ui.actionPause.setChecked(False)
-        self.ui.actionPause.setEnabled(False)
-        self.ui.actionStop.setEnabled(False)
+        self.ui.actionRecord.setEnabled(False)
+        # Set enabled inputs
+        self.ui.spinBoxWindowTime.setEnabled(False)
+        self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
+        self.ui.doubleSpinBoxSampleRate.setEnabled(False)
+        self.ui.spinBoxStopRecordingAfter.setEnabled(False)
+        # Set enabled tool bar and menu
+        self.ui.toolBarFile.setEnabled(False)
+        self.ui.menuFile.setEnabled(False)
+        self.ui.menuTools.setEnabled(False)
 
     def pause(self):
-        """Pauses acquiring."""
-        self.plot_widget.setCurveColor(255, 153, 0)
+        """Pauses acquiring.
+        """
 
+        if self.ui.actionPause.isChecked():
+            # Stopping changing color and label
+            self.plot_widget_rec.timer.stop()
+            self.plot_widget_rec.setCurveColor(255, 153, 0)
+            self.plot_widget_rec.setLabel('top', 'Paused ...')
+        else:
+            # Starting changing color and label
+            self.plot_widget_rec.timer.start()
+            self.plot_widget_rec.setCurveColor(255, 0, 0)
+            self.plot_widget_rec.setLabel('top', 'Recording ...')
+        # Set enabled tool bar
+        self.ui.toolBarFile.setEnabled(False)
+        self.ui.menuFile.setEnabled(False)
+        self.ui.menuTools.setEnabled(False)
 
-    def clearGraph(self):
-        """Clear graph"""
+    def stop(self):
+        """Stops acquiring.
+        """
 
-    def openFile(self):
-        """Opens a file."""
+        # Stopping changing color and label
+        self.plot_widget_rec.timer.stop()
+        self.plot_widget_rec.setCurveColor(0, 255, 0)
+        self.plot_widget_rec.setLabel('top', 'Stoped ...')
+        # Set checked
+        self.ui.actionRecord.setChecked(False)
+        self.ui.actionPause.setChecked(False)
+        # Set enabled buttons
+        self.ui.actionPause.setEnabled(False)
+        self.ui.actionStop.setEnabled(False)
+        self.ui.actionRecord.setEnabled(True)
+        # Set enabled inputs
+        self.ui.doubleSpinBoxSampleInterval.setEnabled(True)
+        self.ui.doubleSpinBoxSampleRate.setEnabled(True)
+        self.ui.spinBoxWindowTime.setEnabled(True)
+        self.ui.spinBoxStopRecordingAfter.setEnabled(True)
+        # Set enabled tool bar
+        self.ui.toolBarFile.setEnabled(True)
+        self.ui.menuFile.setEnabled(True)
+        self.ui.menuTools.setEnabled(True)
 
     def newFile(self):
         """Creates a new file."""

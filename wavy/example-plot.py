@@ -8,6 +8,9 @@ import time
 import math
 import numpy as np
 
+import pyqtgraph.examples
+pyqtgraph.examples.run()
+
 class DynamicPlotter(QtGui.QWidget):
 
     def __init__(self, sampleinterval=0.01, timewindow=20., size=(600,350), parent=None):
