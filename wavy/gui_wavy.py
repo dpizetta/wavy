@@ -16,12 +16,11 @@ import math
 import random
 import sys
 import time
-from wavy.core_wavy import *
-
 
 from gui_wav2dat import ConvertWave2Data
 import numpy as np
 import pyqtgraph as pg
+from wavy.core_wavy import *
 import wavy.images.rc_wavy_rc
 from wavy.mw_wavy import Ui_MainWindow
 
@@ -84,10 +83,10 @@ class PlotRecord(pg.GraphicsWindow):
         self.sample_interval = sample_interval
         self.time_window = time_window
         self._bufsize = int(time_window / sample_interval)
-        self.x = np.linspace(0.0,self.time_window, self._bufsize)
+        self.x = np.linspace(0.0, self.time_window, self._bufsize)
         self.data = np.empty(20, dtype=np.float)
         self.ptr = 0
-        
+
         wavy.core_wavy.begin_audio()
 
         self.timer = QTimer()
@@ -95,12 +94,12 @@ class PlotRecord(pg.GraphicsWindow):
         self.timer.start(self._interval)
 
     def getdata(self):
-        a,b = wavy.core_wavy.get_data_from_audio()
+        a, b = wavy.core_wavy.get_data_from_audio()
         return b[0]
-    
+
     def record(self):
         self.ptr_begin = self.ptr
-        
+
     def stop(self):
         self.ptr_end = self.ptr
 
@@ -112,7 +111,7 @@ class PlotRecord(pg.GraphicsWindow):
             tmp = self.data
             xtmp = self.x
             self.data = np.empty(self.data.shape[0] + 20)
-            self.x = np.empty(self.x.shape[0]  + 20)
+            self.x = np.empty(self.x.shape[0] + 20)
             self.data[:tmp.shape[0]] = tmp
             self.x[:xtmp.shape[0]] = xtmp
 
@@ -268,16 +267,16 @@ class MainWindow(QMainWindow):
         self.plot = PlotRecord()
         self.ui.gridLayout_2.addWidget(self.plot, 0, 1)
         #self.plot_widget = DynamicPlotter(sample_interval=0.01, time_window=20.)
-        #self.plot_widget.initData()
+        # self.plot_widget.initData()
        # self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
         #self.plot_widget_rec = Plotter(sample_interval=0.01, time_window=5.)
         #self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
         # Inputs
-        #self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
-        #self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
-        #self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
-        #self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
-        #self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
+        # self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
+        # self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
+        # self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
+        # self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
+        # self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
     def setSampleRate(self, sample_interval):
         """Sets sample rate.

@@ -5,7 +5,6 @@ import codecs
 import os
 import re
 from setuptools import setup
-import sys
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -51,5 +50,5 @@ setup(name='Wavy',
               "wavy=wavy.wavy:main"
           ],
       }
-      
+
       )

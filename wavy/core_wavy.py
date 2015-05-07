@@ -62,12 +62,10 @@ def save_wave(frames, filename=WAVE_OUTPUT_FILENAME, ):
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
-    
-    
-    
+
+
 # begin_audio()
 # for i in range(0,10):
 #     a,b = get_data_from_audio()
 #     print b
 # end_audio()
-    
