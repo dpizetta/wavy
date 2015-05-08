@@ -34,16 +34,17 @@ classifiers = [
     'Programming Language :: Python']
 
 setup(name='Wavy',
-      version=find_version("wavy", "__init__.py"),
+      version=find_version("wavy", "gui_wavy.py"),
       description='Acquire sound from auxiliary/mic and save to dat',
       long_description=long_description,
       author='Daniel Cosmo Pizetta',
       author_email='daniel.pizett@usp.br',
       classifiers=classifiers,
-      packages=['wavy'],
-      package_data={'': ['README.md',
-                         'ui/*.png',
-                         'ui/*.ui']},
+      packages=['wavy',
+                'wavy.images'],
+      package_data={'data_wavy': ['README.md',
+                                  '*.png',
+                                  '*.ui']},
       scripts=['run.py'],
       entry_points={
           "console_scripts": [
