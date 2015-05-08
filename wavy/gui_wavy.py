@@ -17,6 +17,7 @@ import random
 import sys
 import time
 
+import core_wavy
 from gui_wav2dat import ConvertWave2Data
 import numpy as np
 import pyqtgraph as pg
@@ -55,71 +56,7 @@ def main(argv):
     splash.finish(window)
     return wavy.exec_()
 
-
-class PlotRecord(pg.GraphicsWindow):
-
-    def __init__(self, sample_interval=0.005, time_window=20., parent=None):
-        super(PlotRecord, self).__init__(parent)
-        # Real time plot
-        self._interval = int(sample_interval * 1000)
-        self.rt = self.addPlot()
-        self.rt.setDownsampling(mode='peak')
-        self.rt.setClipToView(True)
-        self.rt.setRange(xRange=[-time_window, 0])
-        self.rt.setLimits(xMax=0)
-        self.curve_rt = self.rt.plot()
-        self.rt.setLabel('top', 'Real Time Data')
-        self.rt.setLabel('left', 'Amplitude', 'V')
-        self.rt.setLabel('bottom', 'Time', 's')
-        # Recording plot
-        self.rec = self.addPlot()
-        self.rec.setDownsampling(mode='peak')
-        self.rec.setClipToView(True)
-        self.curve_rec = self.rec.plot()
-        self.rec.setLabel('top', 'Recorded Data')
-        self.rec.setLabel('left', 'Amplitude', 'V')
-        self.rec.setLabel('bottom', 'Time', 's')
-        # Data
-        self.sample_interval = sample_interval
-        self.time_window = time_window
-        self._bufsize = int(time_window / sample_interval)
-        self.x = np.linspace(0.0, self.time_window, self._bufsize)
-        self.data = np.empty(20, dtype=np.float)
-        self.ptr = 0
-
-        wavy.core_wavy.begin_audio()
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.updateplot)
-        self.timer.start(self._interval)
-
-    def getdata(self):
-        a, b = wavy.core_wavy.get_data_from_audio()
-        return b[0]
-
-    def record(self):
-        self.ptr_begin = self.ptr
-
-    def stop(self):
-        self.ptr_end = self.ptr
-
-    def updateplot(self):
-        self.data[self.ptr] = self.getdata()
-        self.x[self.ptr] = self.x[self.ptr] + self.sample_interval
-        self.ptr += 1
-        if self.ptr >= self.data.shape[0]:
-            tmp = self.data
-            xtmp = self.x
-            self.data = np.empty(self.data.shape[0] + 20)
-            self.x = np.empty(self.x.shape[0] + 20)
-            self.data[:tmp.shape[0]] = tmp
-            self.x[:xtmp.shape[0]] = xtmp
-
-        self.curve_rt.setData(self.data[:self.ptr])
-        self.curve_rt.setPos(-self.ptr, 0)
-        self.curve_rec.setData(self.x[:self.ptr], self.data[:self.ptr])
-
-
+# recording plotter
 class Plotter(pg.PlotWidget):
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
@@ -177,7 +114,7 @@ class Plotter(pg.PlotWidget):
     def setCurveColor(self, r, g, b):
         self.curve.setPen(pg.mkPen(color=(r, g, b)))
 
-
+# realtime plotter
 class DynamicPlotter(pg.PlotWidget):
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
@@ -196,6 +133,9 @@ class DynamicPlotter(pg.PlotWidget):
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.x = np.linspace(-self.time_window, 0.0, self._bufsize)
         self.y = np.zeros(self._bufsize, dtype=np.float)
+        self.audio = core_wavy.AudioRecord("output.wav", 1000, 1)
+        self.audio.begin_audio()
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
         self.timer.start(self._interval)
@@ -213,9 +153,11 @@ class DynamicPlotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        frequency = 0.5
-        noise = random.normalvariate(0., 1.)
-        new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
+        #frequency = 0.5
+        #noise = random.normalvariate(0., 1.)
+        #new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
+        a, b = self.audio.get_data_from_audio()
+        new = b[0]
         return new
 
     def updateplot(self):
@@ -264,19 +206,18 @@ class MainWindow(QMainWindow):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
         # Plot widget
-        self.plot = PlotRecord()
-        self.ui.gridLayout_2.addWidget(self.plot, 0, 1)
-        #self.plot_widget = DynamicPlotter(sample_interval=0.01, time_window=20.)
-        # self.plot_widget.initData()
-       # self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
-        #self.plot_widget_rec = Plotter(sample_interval=0.01, time_window=5.)
-        #self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
+
+        self.plot_widget = DynamicPlotter(sample_interval=0.01, time_window=20.)
+        self.plot_widget.initData()
+        self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
+        self.plot_widget_rec = Plotter(sample_interval=0.01, time_window=5.)
+        self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
         # Inputs
-        # self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
-        # self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
-        # self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
-        # self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
-        # self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
+        self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
+        self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
+        self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
+        self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
+        self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
     def setSampleRate(self, sample_interval):
         """Sets sample rate.

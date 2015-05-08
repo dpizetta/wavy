@@ -18,7 +18,7 @@ import os
 from sys import argv, exit
 import wave
 
-from construct import *
+#from construct import *
 from wavy.dlg_wav2dat import Ui_Dialog
 
 
