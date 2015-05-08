@@ -1,5 +1,8 @@
 
-from wavy import gui_wavy
-from sys import argv
+import sys
 
-gui_wavy.main(argv)
+from wavy.gui_wavy import main
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

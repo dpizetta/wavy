@@ -14,15 +14,14 @@ from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMess
 import collections
 import math
 import random
-import sys
 import time
 
-import core_wavy
-from gui_wav2dat import ConvertWave2Data
 import numpy as np
 import pyqtgraph as pg
-from wavy.core_wavy import *
 import wavy.images.rc_wavy_rc
+
+from wavy.core_wavy import AudioRecord
+from wavy.gui_wav2dat import ConvertWave2Data
 from wavy.mw_wavy import Ui_MainWindow
 
 
@@ -57,6 +56,8 @@ def main(argv):
     return wavy.exec_()
 
 # recording plotter
+
+
 class Plotter(pg.PlotWidget):
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
@@ -115,6 +116,8 @@ class Plotter(pg.PlotWidget):
         self.curve.setPen(pg.mkPen(color=(r, g, b)))
 
 # realtime plotter
+
+
 class DynamicPlotter(pg.PlotWidget):
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
@@ -133,7 +136,7 @@ class DynamicPlotter(pg.PlotWidget):
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.x = np.linspace(-self.time_window, 0.0, self._bufsize)
         self.y = np.zeros(self._bufsize, dtype=np.float)
-        self.audio = core_wavy.AudioRecord("output.wav", 1000, 1)
+        self.audio = AudioRecord("output.wav", 1000, 1)
         self.audio.begin_audio()
 
         self.timer = QTimer()
@@ -153,9 +156,9 @@ class DynamicPlotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        #frequency = 0.5
-        #noise = random.normalvariate(0., 1.)
-        #new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
+        # frequency = 0.5
+        # noise = random.normalvariate(0., 1.)
+        # new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
         a, b = self.audio.get_data_from_audio()
         new = b[0]
         return new
@@ -327,11 +330,9 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """Re implements close event."""
-        wavy.core_wavy.end_audio()
         if self.closeQuestion():
+            self.stop()
+            self.plot_widget.audio.end_audio()
             event.accept()
         else:
             event.ignore()
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))

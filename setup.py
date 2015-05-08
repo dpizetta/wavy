@@ -24,7 +24,7 @@ def read(*parts):
     # https://github.com/pypa/virtualenv/issues/201#issuecomment-3145690
     return codecs.open(os.path.join(here, *parts), 'r').read()
 
-long_description = read('readme.rst')
+long_description = read('README.md')
 classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: End Users/Desktop',
@@ -41,13 +41,13 @@ setup(name='Wavy',
       author_email='daniel.pizett@usp.br',
       classifiers=classifiers,
       packages=['wavy'],
-      package_data={'': ['readme.rst',
+      package_data={'': ['README.md',
                          'ui/*.png',
                          'ui/*.ui']},
-      scripts=['wavy/wavy.py'],
+      scripts=['run.py'],
       entry_points={
           "console_scripts": [
-              "wavy=wavy.wavy:main"
+              "wavy=run:main"
           ],
       }
 
