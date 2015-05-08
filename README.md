@@ -1,4 +1,4 @@
-# wavy
+# Wavy
 Acquire sound from mic and saves as dat.
 
 
