@@ -7,7 +7,7 @@ The recording area has three states: recording when the line is red, paused when
 
 ## Problems and improvements
 
-If you find any problems in this program, please let us know using the Issues System (https://github.com/dpizetta/wavy/issues) provided by the GitHub, this is the right way to keep us alert and provide information about the development for you. Thanks in advance.
+If you find any problems in this program, please let us know using the [Issues System] (https://github.com/dpizetta/wavy/issues) provided by the GitHub, this is the right way to keep us alert and provide information about the development for you. Thanks in advance.
 
 ## About
 
@@ -15,8 +15,9 @@ Wavy was developed to be a simple software to acquire data from microphone chann
 
 ## Authors
 
-Daniel Cosmo Pizetta (https://github.com/dpizetta)
-Wesley Daflita (https://github.com/Wa59)
+[Daniel Cosmo Pizetta] (https://github.com/dpizetta)
+
+[Wesley Daflita] (https://github.com/Wa59)
 
 ## Running
 To run wavy without installing, use
