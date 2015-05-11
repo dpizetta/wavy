@@ -113,7 +113,7 @@ class Plotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        return global_buffer.data[global_buffer.counter - 1]
+        return global_buffer.data[global_buffer.counter-1]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
@@ -137,7 +137,6 @@ class Plotter(pg.PlotWidget):
 class DynamicPlotter(pg.PlotWidget):
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
-
         super(DynamicPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
         self.time_window = time_window
@@ -148,8 +147,8 @@ class DynamicPlotter(pg.PlotWidget):
         self.curve = None
         global global_buffer
 
-    def initData(self):
 
+    def initData(self):
         self._interval = int(self.sample_interval * 1000)
         self._bufsize = int(self.time_window / self.sample_interval)
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
@@ -165,27 +164,29 @@ class DynamicPlotter(pg.PlotWidget):
         self.curve.clear()
 
     def setSampleInterval(self, sample_interval):
-
         self.sample_interval = sample_interval
         self.curve.clear()
         self.initData()
 
     def setTimeWindow(self, time_window):
-
         self.time_window = time_window
         self.curve.clear()
         self.initData()
 
     def getdata(self):
-
-        b = self.audio.get_data_from_audio()[1]
+        # frequency = 0.5
+        # noise = random.normalvariate(0., 1.)
+        # new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
+        a, b = self.audio.get_data_from_audio()
         new = b[0]
 
         if global_buffer.recording is True:
             global_buffer.counter += 1
 
             if global_buffer.counter >= global_buffer.buffer_size:
-                global_buffer.data[global_buffer.counter] = new
+                global_buffer.clear()
+
+            global_buffer.data[global_buffer.counter] = new
 
         return new
 
@@ -288,6 +289,7 @@ class MainWindow(QMainWindow):
         self.ui.menuTools.setEnabled(False)
 
         global_buffer.recording = True
+
 
     def pause(self):
         """Pauses acquiring.
