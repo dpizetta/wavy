@@ -56,10 +56,8 @@ def main(argv):
     return wavy.exec_()
 
 
-# allows real-time transfer of data between plots
-
-
 class GlobalBuffer():
+    """Allows real-time transfer of data between plots"""
 
     def __init__(self, buffer_size=50):
         self.recording = False
@@ -73,13 +71,12 @@ class GlobalBuffer():
 
 global_buffer = GlobalBuffer()
 
-# recording plotter
 
-
-class Plotter(pg.PlotWidget):
+class RecordingPlotter(pg.PlotWidget):
+    """Plots sub data from real time plotter."""
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
-        super(Plotter, self).__init__(parent)
+        super(RecordingPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
         self.time_window = time_window
         self.showGrid(x=True, y=True)
@@ -113,7 +110,7 @@ class Plotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        return global_buffer.data[global_buffer.counter-1]
+        return global_buffer.data[global_buffer.counter - 1]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
@@ -131,13 +128,12 @@ class Plotter(pg.PlotWidget):
     def setCurveColor(self, r, g, b):
         self.curve.setPen(pg.mkPen(color=(r, g, b)))
 
-# realtime plotter
 
-
-class DynamicPlotter(pg.PlotWidget):
+class RealTimeRecordingPlotter(pg.PlotWidget):
+    """Plots data (audio) in real time."""
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
-        super(DynamicPlotter, self).__init__(parent)
+        super(RealTimeRecordingPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
         self.time_window = time_window
         self.showGrid(x=True, y=True)
@@ -147,13 +143,13 @@ class DynamicPlotter(pg.PlotWidget):
         self.curve = None
         global global_buffer
 
-
     def initData(self):
         self._interval = int(self.sample_interval * 1000)
         self._bufsize = int(self.time_window / self.sample_interval)
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.x = np.linspace(-self.time_window, 0.0, self._bufsize)
         self.y = np.zeros(self._bufsize, dtype=np.float)
+
         self.audio = AudioRecord("output.wav", 1000, 1)
         self.audio.begin_audio()
 
@@ -174,10 +170,8 @@ class DynamicPlotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        # frequency = 0.5
-        # noise = random.normalvariate(0., 1.)
-        # new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
-        a, b = self.audio.get_data_from_audio()
+
+        b = self.audio.get_data_from_audio()[1]
         new = b[0]
 
         if global_buffer.recording is True:
@@ -191,6 +185,7 @@ class DynamicPlotter(pg.PlotWidget):
         return new
 
     def updateplot(self):
+
         stp = self.getdata()
         self.databuffer.append(stp)
         self.y[:] = self.databuffer
@@ -237,10 +232,10 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
         # Plot widget
 
-        self.plot_widget = DynamicPlotter(sample_interval=0.01, time_window=20.)
+        self.plot_widget = RealTimeRecordingPlotter(sample_interval=0.01, time_window=20.)
         self.plot_widget.initData()
         self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
-        self.plot_widget_rec = Plotter(sample_interval=0.01, time_window=5.)
+        self.plot_widget_rec = RecordingPlotter(sample_interval=0.01, time_window=5.)
         self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
         # Inputs
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
@@ -289,7 +284,6 @@ class MainWindow(QMainWindow):
         self.ui.menuTools.setEnabled(False)
 
         global_buffer.recording = True
-
 
     def pause(self):
         """Pauses acquiring.
@@ -367,7 +361,8 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Re implements close event."""
         if self.closeQuestion():
-            self.stop()
+            self.plot_widget.timer.stop()
+            self.plot_widget_rec.timer.stop()
             self.plot_widget.audio.end_audio()
             event.accept()
         else:

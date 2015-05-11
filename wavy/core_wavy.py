@@ -35,7 +35,7 @@ class AudioRecord():
             data_stream = self.stream.read(self.chunk)
             # Array of float normalized 0 - 5V
             data_array = (numpy.fromstring(data_stream, dtype=numpy.int16) / 32768.0) * 5.0
-
+        # :todo: Needs some valid return if the self.stream is none.
         return data_stream, data_array
 
     def end_audio(self):
@@ -45,8 +45,10 @@ class AudioRecord():
         if self.stream:
             self.stream.stop_stream()
             self.stream.close()
+            self.stream = None
         # Terminate the self.port connection - important
         self.port.terminate()
+        self.port = None
 
     def save_wave(self, frames):
 
