@@ -8,7 +8,7 @@ class AudioRecord():
     def __init__(self, filename="output.wav", rate=1000, chunk=1):
         self.outputFilename = filename
         self.rate = int(rate)
-        self.chunk = chunk
+        self.chunk = int(chunk)
         self.format = pyaudio.paInt16
         self.channels = 1
         self.port = None

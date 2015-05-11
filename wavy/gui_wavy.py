@@ -12,8 +12,6 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 from PyQt4.QtCore import QTimer
 from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox
 import collections
-import math
-import random
 import time
 
 import numpy as np
@@ -76,6 +74,7 @@ class RecordingPlotter(pg.PlotWidget):
     """Plots sub data from real time plotter."""
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
+
         super(RecordingPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
         self.time_window = time_window
@@ -133,6 +132,16 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
     """Plots data (audio) in real time."""
 
     def __init__(self, sample_interval=0.01, time_window=20., parent=None):
+        """Constructor of the class.
+
+        :param sample_interval: sample interval
+        :type sample_interval: float
+        :param time_window: size (in time) for the main window
+        :type time_window: float
+        :param parent: parent
+        :type parent: QWidget()
+        """
+
         super(RealTimeRecordingPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
         self.time_window = time_window
@@ -144,32 +153,49 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         global global_buffer
 
     def initData(self):
+        """Initializes data for for plotting."""
+
         self._interval = int(self.sample_interval * 1000)
         self._bufsize = int(self.time_window / self.sample_interval)
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.x = np.linspace(-self.time_window, 0.0, self._bufsize)
         self.y = np.zeros(self._bufsize, dtype=np.float)
-
-        self.audio = AudioRecord("output.wav", 1000, 1)
+        # Initializes audio listener
+        # :todo: needs to be separated the interval of plotting data from the acquire data.
+        self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
         self.audio.begin_audio()
-
+        # Initializes the timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
         self.timer.start(self._interval)
+        # Plot for the first time
         self.curve = self.plot(self.x, self.y, pen=(0, 255, 255), antialias=True)
         self.curve.clear()
 
     def setSampleInterval(self, sample_interval):
+        """Sets the sample interval for plotting.
+
+        :param sample_interval: sample interval
+        :type sample_interval: float
+        """
+
         self.sample_interval = sample_interval
         self.curve.clear()
         self.initData()
 
     def setTimeWindow(self, time_window):
+        """Sets the time window for plotting.
+
+        :param time_window: size (in time) for the main window
+        :type time_window: float
+        """
+
         self.time_window = time_window
         self.curve.clear()
         self.initData()
 
     def getdata(self):
+        """Gets data for plotting."""
 
         b = self.audio.get_data_from_audio()[1]
         new = b[0]
@@ -185,14 +211,11 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         return new
 
     def updateplot(self):
-
+        """Updates plot."""
         stp = self.getdata()
         self.databuffer.append(stp)
         self.y[:] = self.databuffer
         self.curve.setData(self.x, self.y)
-
-    def setCurveColor(self, r, g, b):
-        self.curve.setPen(pg.mkPen(color=(r, g, b)))
 
 
 class MainWindow(QMainWindow):
@@ -210,6 +233,11 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle(__app_name__ + '  ' + __version__)
         self.ui.labelAbout.setText(self.tr(about))
+
+        self.ui.doubleSpinBoxSampleInterval.setMinimum(0.00001)
+        self.ui.doubleSpinBoxSampleInterval.setMaximum(0.01)
+        self.ui.doubleSpinBoxSampleInterval.setValue(0.01)
+        self.ui.doubleSpinBoxSampleInterval.setSingleStep(0.001)
         # Connecting actions
         # File actions
         self.ui.actionNew.triggered.connect(self.newFile)
@@ -231,7 +259,6 @@ class MainWindow(QMainWindow):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
         # Plot widget
-
         self.plot_widget = RealTimeRecordingPlotter(sample_interval=0.01, time_window=20.)
         self.plot_widget.initData()
         self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
@@ -242,6 +269,7 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
         self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
         self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
+
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
         global global_buffer
