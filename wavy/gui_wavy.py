@@ -55,6 +55,24 @@ def main(argv):
     splash.finish(window)
     return wavy.exec_()
 
+
+# allows real-time transfer of data between plots
+
+
+class GlobalBuffer():
+
+    def __init__(self, buffer_size=50):
+        self.recording = False
+        self.buffer_size = buffer_size
+        self.data = np.empty(self.buffer_size)
+        self.counter = 0
+
+    def clear(self):
+        self.data = np.empty(self.buffer_size)
+        self.counter = 0
+
+global_buffer = GlobalBuffer()
+
 # recording plotter
 
 
@@ -69,6 +87,7 @@ class Plotter(pg.PlotWidget):
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
         self.curve = None
+        global global_buffer
 
     def initData(self):
         self._interval = int(self.sample_interval * 1000)
@@ -94,10 +113,7 @@ class Plotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        frequency = 0.5
-        noise = random.normalvariate(0., 1.)
-        new = 20. * math.sin(time.time() * frequency * 2 * math.pi) + noise
-        return new
+        return global_buffer.data[global_buffer.counter-1]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
@@ -129,6 +145,8 @@ class DynamicPlotter(pg.PlotWidget):
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
         self.curve = None
+        global global_buffer
+
 
     def initData(self):
         self._interval = int(self.sample_interval * 1000)
@@ -161,6 +179,14 @@ class DynamicPlotter(pg.PlotWidget):
         # new = 10. * math.sin(time.time() * frequency * 2 * math.pi) + noise
         a, b = self.audio.get_data_from_audio()
         new = b[0]
+
+        if global_buffer.recording is True:
+            global_buffer.counter += 1
+
+            if global_buffer.counter >= global_buffer.buffer_size:
+
+            global_buffer.data[global_buffer.counter] = new
+
         return new
 
     def updateplot(self):
@@ -222,6 +248,8 @@ class MainWindow(QMainWindow):
         self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
+        global global_buffer
+
     def setSampleRate(self, sample_interval):
         """Sets sample rate.
         """
@@ -259,6 +287,9 @@ class MainWindow(QMainWindow):
         self.ui.menuFile.setEnabled(False)
         self.ui.menuTools.setEnabled(False)
 
+        global_buffer.recording = True
+
+
     def pause(self):
         """Pauses acquiring.
         """
@@ -268,11 +299,13 @@ class MainWindow(QMainWindow):
             self.plot_widget_rec.timer.stop()
             self.plot_widget_rec.setCurveColor(255, 153, 0)
             self.plot_widget_rec.setLabel('top', 'Paused ...')
+            global_buffer.recording = False
         else:
             # Starting changing color and label
             self.plot_widget_rec.timer.start()
             self.plot_widget_rec.setCurveColor(255, 0, 0)
             self.plot_widget_rec.setLabel('top', 'Recording ...')
+            global_buffer.recording = True
         # Set enabled tool bar
         self.ui.toolBarFile.setEnabled(False)
         self.ui.menuFile.setEnabled(False)
@@ -302,6 +335,8 @@ class MainWindow(QMainWindow):
         self.ui.toolBarFile.setEnabled(True)
         self.ui.menuFile.setEnabled(True)
         self.ui.menuTools.setEnabled(True)
+
+        global_buffer.recording = False
 
     def newFile(self):
         """Creates a new file."""
