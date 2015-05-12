@@ -15,21 +15,36 @@ Wavy was developed to be a simple software to acquire data from microphone chann
 
 ## Authors
 
-[Daniel Cosmo Pizetta] (https://github.com/dpizetta)
+* [Daniel Cosmo Pizetta] (https://github.com/dpizetta)
+* [Wesley Daflita] (https://github.com/Wa59)
 
-[Wesley Daflita] (https://github.com/Wa59)
+## Acknowledgment
 
-## Running
+Professors
+
+* PhD Fernando Fernandes Paiva
+* PhD Valmor Roberto Mastelaro
+
+Technicians
+
+* Antenor Fabbri Petrilli Filho
+* Cláudio Boense Bretas
+* Jae Antonio de Castro Filho
+
+# Running the code
+
 To run wavy without installing, use
 
 `$ python run.py`
 
-## Installing
+# Installing
+
 To install it, do the following
 
 `$ python setup.py install`
 
-## Installing as developer
+# Installing as developer
+
 To install it as a developer, which means install it like a library but keeping it in the same place it is and providing the auto update if any changes are made.
 
 `$ python setup.py install develop`
