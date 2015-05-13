@@ -9,8 +9,8 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 """
 
 
-from PyQt4.QtCore import QTimer
-from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox
+from PyQt4.QtCore import QTimer, QSize
+from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox, QIcon
 import collections
 import time
 
@@ -62,6 +62,17 @@ class GlobalBuffer():
         self.buffer_size = buffer_size
         self.data = np.empty(self.buffer_size)
         self.counter = 0
+        self.timestamp = 0
+        self.elapsed_time = 0
+        self.time_limit = 0
+
+    def startRecording(self):
+        self.timestamp = time.time()
+        self.recording = True
+
+    def stopRecording(self):
+        self.timestamp = 0
+        self.recording = False
 
     def clear(self):
         self.data = np.empty(self.buffer_size)
@@ -109,6 +120,12 @@ class RecordingPlotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
+        global_buffer.elapsed_time = int(time.time() - global_buffer.timestamp)
+        
+        if global_buffer.time_limit != 0 and global_buffer.elapsed_time >= global_buffer.time_limit:
+            print "TODO: Stop recording"
+
+
         return global_buffer.data[global_buffer.counter - 1]
 
     def updateplot(self):
@@ -228,6 +245,9 @@ class MainWindow(QMainWindow):
         :param parent: parent
         :type param: QWidget()
         """
+
+        global global_buffer
+
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -238,6 +258,7 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBoxSampleInterval.setMaximum(0.01)
         self.ui.doubleSpinBoxSampleInterval.setValue(0.01)
         self.ui.doubleSpinBoxSampleInterval.setSingleStep(0.001)
+
         # Connecting actions
         # File actions
         self.ui.actionNew.triggered.connect(self.newFile)
@@ -264,6 +285,7 @@ class MainWindow(QMainWindow):
         self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
         self.plot_widget_rec = RecordingPlotter(sample_interval=0.01, time_window=5.)
         self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
+
         # Inputs
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
@@ -272,7 +294,6 @@ class MainWindow(QMainWindow):
 
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
-        global global_buffer
 
     def setSampleRate(self, sample_interval):
         """Sets sample rate.
@@ -292,26 +313,30 @@ class MainWindow(QMainWindow):
         """Starts acquiring.
         """
 
+        # Checks if there is already some recorded data
+        # and acts accordingly
         if self.plot_widget_rec.curve is not None:
-            self.plot_widget_rec.curve.clear()
-        self.plot_widget_rec.initData()
-        self.plot_widget_rec.setCurveColor(255, 0, 0)
-        self.plot_widget_rec.setLabel('top', 'Recording ...')
-        # Set enabled buttons
-        self.ui.actionPause.setEnabled(True)
-        self.ui.actionStop.setEnabled(True)
-        self.ui.actionRecord.setEnabled(False)
-        # Set enabled inputs
-        self.ui.spinBoxWindowTime.setEnabled(False)
-        self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
-        self.ui.doubleSpinBoxSampleRate.setEnabled(False)
-        self.ui.spinBoxStopRecordingAfter.setEnabled(False)
-        # Set enabled tool bar and menu
-        self.ui.toolBarFile.setEnabled(False)
-        self.ui.menuFile.setEnabled(False)
-        self.ui.menuTools.setEnabled(False)
+            self.newRecordingEvent()
+        else:
+            self.plot_widget_rec.initData()
+            self.plot_widget_rec.setCurveColor(255, 0, 0)
+            self.plot_widget_rec.setLabel('top', 'Recording ...')
+            # Set enabled buttons
+            self.ui.actionPause.setEnabled(True)
+            self.ui.actionStop.setEnabled(True)
+            self.ui.actionRecord.setEnabled(False)
+            # Set enabled inputs
+            self.ui.spinBoxWindowTime.setEnabled(False)
+            self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
+            self.ui.doubleSpinBoxSampleRate.setEnabled(False)
+            self.ui.spinBoxStopRecordingAfter.setEnabled(False)
+            # Set enabled tool bar and menu
+            self.ui.toolBarFile.setEnabled(False)
+            self.ui.menuFile.setEnabled(False)
+            self.ui.menuTools.setEnabled(False)
 
-        global_buffer.recording = True
+            global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
+            global_buffer.startRecording()
 
     def pause(self):
         """Pauses acquiring.
@@ -322,13 +347,13 @@ class MainWindow(QMainWindow):
             self.plot_widget_rec.timer.stop()
             self.plot_widget_rec.setCurveColor(255, 153, 0)
             self.plot_widget_rec.setLabel('top', 'Paused ...')
-            global_buffer.recording = False
+            global_buffer.stopRecording()
         else:
             # Starting changing color and label
             self.plot_widget_rec.timer.start()
             self.plot_widget_rec.setCurveColor(255, 0, 0)
             self.plot_widget_rec.setLabel('top', 'Recording ...')
-            global_buffer.recording = True
+            global_buffer.startRecording()
         # Set enabled tool bar
         self.ui.toolBarFile.setEnabled(False)
         self.ui.menuFile.setEnabled(False)
@@ -359,7 +384,7 @@ class MainWindow(QMainWindow):
         self.ui.menuFile.setEnabled(True)
         self.ui.menuTools.setEnabled(True)
 
-        global_buffer.recording = False
+        global_buffer.stopRecording()
 
     def newFile(self):
         """Creates a new file."""
@@ -376,11 +401,71 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, self.tr('About'),
                           self.tr(about))
 
+    def newRecordingQuestion(self):
+        """Asks user if recorded data should be discarded"""
+        answer =  QMessageBox.question(self,
+                                      self.tr('New recording'),
+                                      self.tr('Do you want to save the current recording?'),
+                                      QMessageBox.Yes | QMessageBox.No,
+                                      QMessageBox.No)
+
+        return answer == QMessageBox.Yes
+
+
+    def newRecordingEvent(self):
+        """recording event."""
+        if self.newRecordingQuestion():
+            # TODO: Create a single method that handles all recording
+            # instead of using the same code in three distinct places
+            self.plot_widget_rec.curve.clear()
+            self.plot_widget_rec.initData()
+            self.plot_widget_rec.setCurveColor(255, 0, 0)
+            self.plot_widget_rec.setLabel('top', 'Recording ...')
+            # Set enabled buttons
+            self.ui.actionPause.setEnabled(True)
+            self.ui.actionStop.setEnabled(True)
+            self.ui.actionRecord.setEnabled(False)
+            # Set enabled inputs
+            self.ui.spinBoxWindowTime.setEnabled(False)
+            self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
+            self.ui.doubleSpinBoxSampleRate.setEnabled(False)
+            self.ui.spinBoxStopRecordingAfter.setEnabled(False)
+            # Set enabled tool bar and menu
+            self.ui.toolBarFile.setEnabled(False)
+            self.ui.menuFile.setEnabled(False)
+            self.ui.menuTools.setEnabled(False)
+
+            global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
+            global_buffer.startRecording()
+
+            print "TODO: Save dialog"
+        else:
+            self.plot_widget_rec.curve.clear()
+            self.plot_widget_rec.initData()
+            self.plot_widget_rec.setCurveColor(255, 0, 0)
+            self.plot_widget_rec.setLabel('top', 'Recording ...')
+            # Set enabled buttons
+            self.ui.actionPause.setEnabled(True)
+            self.ui.actionStop.setEnabled(True)
+            self.ui.actionRecord.setEnabled(False)
+            # Set enabled inputs
+            self.ui.spinBoxWindowTime.setEnabled(False)
+            self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
+            self.ui.doubleSpinBoxSampleRate.setEnabled(False)
+            self.ui.spinBoxStopRecordingAfter.setEnabled(False)
+            # Set enabled tool bar and menu
+            self.ui.toolBarFile.setEnabled(False)
+            self.ui.menuFile.setEnabled(False)
+            self.ui.menuTools.setEnabled(False)
+
+            global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
+            global_buffer.startRecording()
+
     def closeQuestion(self):
         """Asks about to close."""
         answer = QMessageBox.question(self,
                                       self.tr('Close'),
-                                      self.tr('Do you want to exit ?'),
+                                      self.tr('Do you want to exit?\nData that was not saved will be lost!'),
                                       QMessageBox.Yes | QMessageBox.No,
                                       QMessageBox.No)
 
@@ -390,8 +475,11 @@ class MainWindow(QMainWindow):
         """Re implements close event."""
         if self.closeQuestion():
             self.plot_widget.timer.stop()
-            self.plot_widget_rec.timer.stop()
             self.plot_widget.audio.end_audio()
+
+            if self.plot_widget_rec.curve is not None:
+                self.plot_widget_rec.timer.stop()
+
             event.accept()
         else:
             event.ignore()
