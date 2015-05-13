@@ -84,7 +84,18 @@ global_buffer = GlobalBuffer()
 class RecordingPlotter(pg.PlotWidget):
     """Plots sub data from real time plotter."""
 
-    def __init__(self, sample_interval=0.01, time_window=20., parent=None):
+    def __init__(self, sample_interval=0.01, time_window=20., main_window=None, parent=None):
+        """Constructor of the class.
+
+        :param sample_interval: sample interval
+        :type sample_interval: float
+        :param time_window: size (in time) for the main window
+        :type time_window: float
+        :param main_window: main_window
+        :type main_window: MainWindow()
+        :param parent: parent
+        :type parent: QWidget()
+        """
 
         super(RecordingPlotter, self).__init__(parent)
         self.sample_interval = sample_interval
@@ -94,6 +105,7 @@ class RecordingPlotter(pg.PlotWidget):
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
         self.curve = None
+        self.main_window = main_window
         global global_buffer
 
     def initData(self):
@@ -123,8 +135,7 @@ class RecordingPlotter(pg.PlotWidget):
         global_buffer.elapsed_time = int(time.time() - global_buffer.timestamp)
         
         if global_buffer.time_limit != 0 and global_buffer.elapsed_time >= global_buffer.time_limit:
-            print "TODO: Stop recording"
-
+            self.main_window.stop()
 
         return global_buffer.data[global_buffer.counter - 1]
 
@@ -283,7 +294,7 @@ class MainWindow(QMainWindow):
         self.plot_widget = RealTimeRecordingPlotter(sample_interval=0.01, time_window=20.)
         self.plot_widget.initData()
         self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
-        self.plot_widget_rec = RecordingPlotter(sample_interval=0.01, time_window=5.)
+        self.plot_widget_rec = RecordingPlotter(sample_interval=0.01, time_window=5., main_window=self)
         self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
 
         # Inputs
@@ -366,7 +377,7 @@ class MainWindow(QMainWindow):
         # Stopping changing color and label
         self.plot_widget_rec.timer.stop()
         self.plot_widget_rec.setCurveColor(0, 255, 0)
-        self.plot_widget_rec.setLabel('top', 'Stoped ...')
+        self.plot_widget_rec.setLabel('top', 'Stopped ...')
         # Set checked
         self.ui.actionRecord.setChecked(False)
         self.ui.actionPause.setChecked(False)
@@ -388,6 +399,7 @@ class MainWindow(QMainWindow):
 
     def newFile(self):
         """Creates a new file."""
+
 
     def saveFile(self):
         """Saves a file."""
