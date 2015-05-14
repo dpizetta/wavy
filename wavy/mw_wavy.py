@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mw_wavy.ui'
 #
-# Created: Tue Mar 10 11:10:09 2015
-#      by: PyQt4 UI code generator 4.10.4
+# Created: Thu May 14 10:07:55 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -184,11 +184,14 @@ class Ui_MainWindow(object):
         self.actionNew.setObjectName(_fromUtf8("actionNew"))
         self.actionConvert_Wav_to_Dat = QtGui.QAction(MainWindow)
         self.actionConvert_Wav_to_Dat.setObjectName(_fromUtf8("actionConvert_Wav_to_Dat"))
-        self.menuFile.addAction(self.actionNew)
-        self.menuFile.addAction(self.actionOpen)
-        self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionSave)
+        self.actionPrint_graph = QtGui.QAction(MainWindow)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPrint_graph.setIcon(icon9)
+        self.actionPrint_graph.setObjectName(_fromUtf8("actionPrint_graph"))
         self.menuFile.addAction(self.actionSave_As)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionPrint_graph)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionQuit)
         self.menuHelp.addAction(self.actionAbout_Qt)
@@ -201,14 +204,12 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuAcqusition.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
-        self.toolBarFile.addAction(self.actionNew)
-        self.toolBarFile.addAction(self.actionOpen)
-        self.toolBarFile.addSeparator()
-        self.toolBarFile.addAction(self.actionSave)
         self.toolBarFile.addAction(self.actionSave_As)
+        self.toolBarFile.addAction(self.actionPrint_graph)
         self.toolBarAcquisition.addAction(self.actionRecord)
         self.toolBarAcquisition.addAction(self.actionPause)
         self.toolBarAcquisition.addAction(self.actionStop)
+        self.toolBarAcquisition.addSeparator()
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -235,9 +236,9 @@ class Ui_MainWindow(object):
         self.toolBarFile.setWindowTitle(_translate("MainWindow", "toolBar_2", None))
         self.toolBarAcquisition.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionSave.setText(_translate("MainWindow", "Save", None))
-        self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S", None))
         self.actionSave_As.setText(_translate("MainWindow", "Save As", None))
-        self.actionSave_As.setShortcut(_translate("MainWindow", "Ctrl+Shift+S", None))
+        self.actionSave_As.setToolTip(_translate("MainWindow", "Save data as file", None))
+        self.actionSave_As.setShortcut(_translate("MainWindow", "Ctrl+S", None))
         self.actionOpen.setText(_translate("MainWindow", "Open", None))
         self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O", None))
         self.actionQuit.setText(_translate("MainWindow", "Quit", None))
@@ -245,12 +246,17 @@ class Ui_MainWindow(object):
         self.actionAbout_Qt.setText(_translate("MainWindow", "About Qt", None))
         self.actionAbout_Wavy.setText(_translate("MainWindow", "About Wavy", None))
         self.actionRecord.setText(_translate("MainWindow", "Record", None))
+        self.actionRecord.setToolTip(_translate("MainWindow", "Start recording", None))
         self.actionRecord.setShortcut(_translate("MainWindow", "Alt+R", None))
         self.actionStop.setText(_translate("MainWindow", "Stop", None))
+        self.actionStop.setToolTip(_translate("MainWindow", "Stop recording", None))
         self.actionStop.setShortcut(_translate("MainWindow", "Alt+S", None))
         self.actionPause.setText(_translate("MainWindow", "Pause", None))
+        self.actionPause.setToolTip(_translate("MainWindow", "Pause recording", None))
         self.actionPause.setShortcut(_translate("MainWindow", "Alt+P", None))
         self.actionNew.setText(_translate("MainWindow", "New", None))
-        self.actionNew.setShortcut(_translate("MainWindow", "Ctrl+N", None))
         self.actionConvert_Wav_to_Dat.setText(_translate("MainWindow", "Convert .wav to .dat", None))
+        self.actionPrint_graph.setText(_translate("MainWindow", "Export graph", None))
+        self.actionPrint_graph.setToolTip(_translate("MainWindow", "Export graph as image", None))
+        self.actionPrint_graph.setShortcut(_translate("MainWindow", "Ctrl+E", None))
 

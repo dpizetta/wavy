@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'dlg_wav2dat.ui'
 #
-# Created: Tue Mar 10 11:10:09 2015
-#      by: PyQt4 UI code generator 4.10.4
+# Created: Thu May 14 10:07:55 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
