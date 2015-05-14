@@ -9,19 +9,23 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 """
 
 
-from PyQt4.QtCore import QTimer, QSize
-from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox, QIcon
+from PyQt4.QtCore import QTimer
+from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox, QFileDialog
 import collections
+import logging
+import os
 import time
+import pyqtgraph.exporters as exporters
 
 import numpy as np
 import pyqtgraph as pg
-import wavy.images.rc_wavy_rc
-
 from wavy.core_wavy import AudioRecord
 from wavy.gui_wav2dat import ConvertWave2Data
+import wavy.images.rc_wavy_rc
 from wavy.mw_wavy import Ui_MainWindow
 
+
+logging.basicConfig(level=logging.INFO)
 
 __version__ = "0.1"
 __app_name__ = "Wavy"
@@ -133,7 +137,7 @@ class RecordingPlotter(pg.PlotWidget):
 
     def getdata(self):
         global_buffer.elapsed_time = int(time.time() - global_buffer.timestamp)
-        
+
         if global_buffer.time_limit != 0 and global_buffer.elapsed_time >= global_buffer.time_limit:
             self.main_window.stop()
 
@@ -262,8 +266,12 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(__app_name__ + '  ' + __version__)
         self.ui.labelAbout.setText(self.tr(about))
+        self.setWindowTitle(__app_name__ + '  ' + __version__)
+
+        self.filepath = ""
+        # Initial state is none because there is no data acquired yet
+        self.isSaved = None
 
         self.ui.doubleSpinBoxSampleInterval.setMinimum(0.00001)
         self.ui.doubleSpinBoxSampleInterval.setMaximum(0.01)
@@ -272,11 +280,16 @@ class MainWindow(QMainWindow):
 
         # Connecting actions
         # File actions
-        self.ui.actionNew.triggered.connect(self.newFile)
+        # self.ui.actionNew.triggered.connect(self.newFile)
         # For now it cannot open a file
         # self.ui.actionOpen.triggered.connect(self.openFile)
-        self.ui.actionSave.triggered.connect(self.saveFile)
+        # self.ui.actionSave.triggered.connect(self.saveFile)
+
         self.ui.actionSave_As.triggered.connect(self.saveFileAs)
+        self.ui.actionSave_As.setEnabled(False)
+        self.ui.actionPrint_graph.triggered.connect(self.saveImageAs)
+        self.ui.actionPrint_graph.setEnabled(False)
+
         # Acquire actions
         self.ui.actionRecord.triggered.connect(self.record)
         self.ui.actionRecord.setCheckable(True)
@@ -285,11 +298,14 @@ class MainWindow(QMainWindow):
         self.ui.actionPause.setEnabled(False)
         self.ui.actionStop.triggered.connect(self.stop)
         self.ui.actionStop.setEnabled(False)
+
         # Tools actions
         self.ui.actionConvert_Wav_to_Dat.triggered.connect(self.callTools)
+
         # Program actions
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
+
         # Plot widget
         self.plot_widget = RealTimeRecordingPlotter(sample_interval=0.01, time_window=20.)
         self.plot_widget.initData()
@@ -305,53 +321,74 @@ class MainWindow(QMainWindow):
 
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
 
-
     def setSampleRate(self, sample_interval):
-        """Sets sample rate.
-        """
+        """Sets sample rate."""
+
         self.ui.doubleSpinBoxSampleRate.setValue(1. / sample_interval)
 
     def setSampleInterval(self, sample_rate):
-        """Sets sample interval.
-        """
+        """Sets sample interval."""
+
         self.ui.doubleSpinBoxSampleInterval.setValue(1. / sample_rate)
 
     def callTools(self):
+        """Call converting tool."""
+
         dlg = ConvertWave2Data()
         dlg.exec_()
 
+    def getFileName(self):
+        """Construct a new file name to save the data."""
+
+        # Creates auto naming filename
+        filename = 'new_wavy_data_' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
+        # Gets the current directory
+        base_path = os.path.abspath(".")
+        self.filepath = os.path.join(base_path, filename)
+        self.setWindowFilePath(self.filepath)
+
     def record(self):
-        """Starts acquiring.
-        """
+        """Starts acquiring."""
 
-        # Checks if there is already some recorded data
-        # and acts accordingly
+        # Create a new filename for the current acquisition
+        self.getFileName()
+        # Checks if is saved before start a new recording
+        if self.isSaved is False:
+            answer = QMessageBox.question(
+                self,
+                self.tr('Question'),
+                self.tr('Do you want to save your data before start a new record?'),
+                QMessageBox.Yes | QMessageBox.No)
+            if answer == QMessageBox.Yes:
+                self.saveFileAs()
+
         if self.plot_widget_rec.curve is not None:
-            self.newRecordingEvent()
-        else:
-            self.plot_widget_rec.initData()
-            self.plot_widget_rec.setCurveColor(255, 0, 0)
-            self.plot_widget_rec.setLabel('top', 'Recording ...')
-            # Set enabled buttons
-            self.ui.actionPause.setEnabled(True)
-            self.ui.actionStop.setEnabled(True)
-            self.ui.actionRecord.setEnabled(False)
-            # Set enabled inputs
-            self.ui.spinBoxWindowTime.setEnabled(False)
-            self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
-            self.ui.doubleSpinBoxSampleRate.setEnabled(False)
-            self.ui.spinBoxStopRecordingAfter.setEnabled(False)
-            # Set enabled tool bar and menu
-            self.ui.toolBarFile.setEnabled(False)
-            self.ui.menuFile.setEnabled(False)
-            self.ui.menuTools.setEnabled(False)
+            self.plot_widget_rec.curve.clear()
 
-            global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
-            global_buffer.startRecording()
+        self.plot_widget_rec.initData()
+        self.plot_widget_rec.setCurveColor(255, 0, 0)
+        self.plot_widget_rec.setLabel('top', 'Recording ...')
+        # Set enabled buttons
+        self.ui.actionPause.setEnabled(True)
+        self.ui.actionStop.setEnabled(True)
+        self.ui.actionRecord.setEnabled(False)
+        # Set enabled inputs
+        self.ui.spinBoxWindowTime.setEnabled(False)
+        self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
+        self.ui.doubleSpinBoxSampleRate.setEnabled(False)
+        self.ui.spinBoxStopRecordingAfter.setEnabled(False)
+        # Set enabled tool bar and menu
+        self.ui.toolBarFile.setEnabled(False)
+        self.ui.menuFile.setEnabled(False)
+        self.ui.menuTools.setEnabled(False)
+
+        global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
+        global_buffer.startRecording()
+
+        self.isSaved = False
 
     def pause(self):
-        """Pauses acquiring.
-        """
+        """Pauses acquiring."""
 
         if self.ui.actionPause.isChecked():
             # Stopping changing color and label
@@ -371,8 +408,7 @@ class MainWindow(QMainWindow):
         self.ui.menuTools.setEnabled(False)
 
     def stop(self):
-        """Stops acquiring.
-        """
+        """Stops acquiring."""
 
         # Stopping changing color and label
         self.plot_widget_rec.timer.stop()
@@ -395,17 +431,80 @@ class MainWindow(QMainWindow):
         self.ui.menuFile.setEnabled(True)
         self.ui.menuTools.setEnabled(True)
 
+        self.ui.actionSave_As.setEnabled(True)
+        self.ui.actionPrint_graph.setEnabled(True)
+
         global_buffer.stopRecording()
 
-    def newFile(self):
-        """Creates a new file."""
-
-
-    def saveFile(self):
+    def savePNGFile(self, filepath):
         """Saves a file."""
 
-    def saveFileAs(self, filename=''):
-        """Saves file as new name."""
+        filepath += ".png"
+        logging.info('File path to save image: %s', filepath)
+        exporter = exporters.ImageExporter(self.plot_widget_rec.plotItem)
+        exporter.export(filepath)
+
+    def saveCSVFile(self, filepath):
+        """Saves a file."""
+
+        filepath += ".csv"
+        logging.info('File path to save data: %s', filepath)
+        exporter = exporters.CSVExporter(self.plot_widget_rec.plotItem)
+        exporter.export(filepath)
+
+    def saveImageAs(self):
+        """Saves image as."""
+
+        path = QFileDialog.getSaveFileName(self,
+                                           self.tr('Export recorded image ...'),
+                                           self.filepath,
+                                           self.tr("Image File (*.png)"))
+        if not path == "":
+            # This str converting is needed because the return is a QString
+            self.filepath = str(path)
+            try:
+                self.savePNGFile(self.filepath)
+            except Exception, e:
+                self.isSaved = False
+                QMessageBox.critical(self,
+                                     self.tr('Critical'),
+                                     self.tr('There was a problem to save image\n {}'.format(str(e))),
+                                     QMessageBox.Ok)
+            else:
+                self.isSaved = True
+                self.ui.actionSave_As.setEnabled(False)
+                logging.info('The image was saved in the file: %s', self.filepath)
+                QMessageBox.information(self,
+                                        self.tr('Information'),
+                                        self.tr('Image was successfully exported.'),
+                                        QMessageBox.Ok)
+
+    def saveFileAs(self):
+        """Saves data file as."""
+
+        path = QFileDialog.getSaveFileName(self,
+                                           self.tr('Save recorded data ...'),
+                                           self.filepath,
+                                           self.tr("Data File (*.csv)"))
+        if not path == "":
+            # This str converting is needed because the return is a QString
+            self.filepath = str(path)
+            try:
+                self.saveCSVFile(self.filepath)
+            except Exception, e:
+                self.isSaved = False
+                QMessageBox.critical(self,
+                                     self.tr('Critical'),
+                                     self.tr('There was a problem to save data\n {}'.format(str(e))),
+                                     QMessageBox.Ok)
+            else:
+                self.isSaved = True
+                self.ui.actionSave_As.setEnabled(False)
+                logging.info('The data was saved in the file: %s', self.filepath)
+                QMessageBox.information(self,
+                                        self.tr('Information'),
+                                        self.tr('Data was successfully saved.'),
+                                        QMessageBox.Ok)
 
     def about(self):
         """Show the dialog about."""
@@ -413,71 +512,22 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, self.tr('About'),
                           self.tr(about))
 
-    def newRecordingQuestion(self):
-        """Asks user if recorded data should be discarded"""
-        answer =  QMessageBox.question(self,
-                                      self.tr('New recording'),
-                                      self.tr('Do you want to save the current recording?'),
-                                      QMessageBox.Yes | QMessageBox.No,
-                                      QMessageBox.No)
-
-        return answer == QMessageBox.Yes
-
-
-    def newRecordingEvent(self):
-        """recording event."""
-        if self.newRecordingQuestion():
-            # TODO: Create a single method that handles all recording
-            # instead of using the same code in three distinct places
-            self.plot_widget_rec.curve.clear()
-            self.plot_widget_rec.initData()
-            self.plot_widget_rec.setCurveColor(255, 0, 0)
-            self.plot_widget_rec.setLabel('top', 'Recording ...')
-            # Set enabled buttons
-            self.ui.actionPause.setEnabled(True)
-            self.ui.actionStop.setEnabled(True)
-            self.ui.actionRecord.setEnabled(False)
-            # Set enabled inputs
-            self.ui.spinBoxWindowTime.setEnabled(False)
-            self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
-            self.ui.doubleSpinBoxSampleRate.setEnabled(False)
-            self.ui.spinBoxStopRecordingAfter.setEnabled(False)
-            # Set enabled tool bar and menu
-            self.ui.toolBarFile.setEnabled(False)
-            self.ui.menuFile.setEnabled(False)
-            self.ui.menuTools.setEnabled(False)
-
-            global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
-            global_buffer.startRecording()
-
-            print "TODO: Save dialog"
-        else:
-            self.plot_widget_rec.curve.clear()
-            self.plot_widget_rec.initData()
-            self.plot_widget_rec.setCurveColor(255, 0, 0)
-            self.plot_widget_rec.setLabel('top', 'Recording ...')
-            # Set enabled buttons
-            self.ui.actionPause.setEnabled(True)
-            self.ui.actionStop.setEnabled(True)
-            self.ui.actionRecord.setEnabled(False)
-            # Set enabled inputs
-            self.ui.spinBoxWindowTime.setEnabled(False)
-            self.ui.doubleSpinBoxSampleInterval.setEnabled(False)
-            self.ui.doubleSpinBoxSampleRate.setEnabled(False)
-            self.ui.spinBoxStopRecordingAfter.setEnabled(False)
-            # Set enabled tool bar and menu
-            self.ui.toolBarFile.setEnabled(False)
-            self.ui.menuFile.setEnabled(False)
-            self.ui.menuTools.setEnabled(False)
-
-            global_buffer.time_limit = self.ui.spinBoxStopRecordingAfter.value()
-            global_buffer.startRecording()
-
     def closeQuestion(self):
         """Asks about to close."""
+
+        if self.isSaved is False:
+            answer = QMessageBox.question(
+                self,
+                self.tr('Question'),
+                self.tr('Do you want to save your data before exit ?'),
+                QMessageBox.Yes | QMessageBox.No)
+
+            if answer == QMessageBox.Yes:
+                self.saveFileAs()
+
         answer = QMessageBox.question(self,
                                       self.tr('Close'),
-                                      self.tr('Do you want to exit?\nData that was not saved will be lost!'),
+                                      self.tr('Do you want to exit?'),
                                       QMessageBox.Yes | QMessageBox.No,
                                       QMessageBox.No)
 
