@@ -32,6 +32,7 @@ var/
 *.manifest
 *.spec
 
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -60,3 +61,6 @@ target/
 #Backup files
 *.*~
 *.bak
+new_wavy*.csv
+new_wavy*.png
+new_wavy*.dat

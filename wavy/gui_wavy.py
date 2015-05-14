@@ -1,9 +1,9 @@
 """Wavy main window.
 
-Wavy is a simple program that allows you to acquire sound from mic and save as .wav or .dat.
+Wavy is a simple program that allows you to acquire sound from mic and save as .csv or .png.
 
-:authors: Daniel Cosmo Pizetta
-:contact: daniel.pizetta@usp.br
+:authors: Daniel Cosmo Pizetta, Wesley Daflita
+:contact: daniel.pizetta@usp.br, wesley.daflita@usp.br
 :since: 27/02/2015
 
 """
@@ -12,6 +12,8 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 from PyQt4.QtCore import QTimer
 from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox, QFileDialog
 import collections
+# Instead of using prints in your code, use logging.info,
+# this could be turned on or off easily. There are some examples bellow.
 import logging
 import os
 import time
@@ -27,10 +29,10 @@ from wavy.mw_wavy import Ui_MainWindow
 
 logging.basicConfig(level=logging.INFO)
 
-__version__ = "0.1"
+__version__ = "0.2"
 __app_name__ = "Wavy"
 
-about = '<h3>{} v.{}</h3><p>Author: Daniel Cosmo Pizetta<br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .wav or .dat.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
+about = '<h3>{} v.{}</h3><p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
 
 
 def main(argv):
@@ -139,6 +141,9 @@ class RecordingPlotter(pg.PlotWidget):
         global_buffer.elapsed_time = int(time.time() - global_buffer.timestamp)
 
         if global_buffer.time_limit != 0 and global_buffer.elapsed_time >= global_buffer.time_limit:
+            # this is not a good way to stop because you need the parent,
+            # and the parents stop method calls your methods.
+            # We need to thing about something different here.
             self.main_window.stop()
 
         return global_buffer.data[global_buffer.counter - 1]
@@ -337,7 +342,7 @@ class MainWindow(QMainWindow):
         dlg = ConvertWave2Data()
         dlg.exec_()
 
-    def getFileName(self):
+    def createFileName(self):
         """Construct a new file name to save the data."""
 
         # Creates auto naming filename
@@ -351,7 +356,7 @@ class MainWindow(QMainWindow):
         """Starts acquiring."""
 
         # Create a new filename for the current acquisition
-        self.getFileName()
+        self.createFileName()
         # Checks if is saved before start a new recording
         if self.isSaved is False:
             answer = QMessageBox.question(
@@ -389,6 +394,8 @@ class MainWindow(QMainWindow):
 
     def pause(self):
         """Pauses acquiring."""
+        # TODO: We need to discuss if there is needed
+        # because the time is not correctly saved
 
         if self.ui.actionPause.isChecked():
             # Stopping changing color and label
@@ -437,7 +444,7 @@ class MainWindow(QMainWindow):
         global_buffer.stopRecording()
 
     def savePNGFile(self, filepath):
-        """Saves a file."""
+        """Saves an image."""
 
         filepath += ".png"
         logging.info('File path to save image: %s', filepath)
@@ -445,7 +452,7 @@ class MainWindow(QMainWindow):
         exporter.export(filepath)
 
     def saveCSVFile(self, filepath):
-        """Saves a file."""
+        """Saves a data file."""
 
         filepath += ".csv"
         logging.info('File path to save data: %s', filepath)
@@ -460,7 +467,7 @@ class MainWindow(QMainWindow):
                                            self.filepath,
                                            self.tr("Image File (*.png)"))
         if not path == "":
-            # This str converting is needed because the return is a QString
+            # This string converting is needed because the return is a QString
             self.filepath = str(path)
             try:
                 self.savePNGFile(self.filepath)
@@ -487,7 +494,7 @@ class MainWindow(QMainWindow):
                                            self.filepath,
                                            self.tr("Data File (*.csv)"))
         if not path == "":
-            # This str converting is needed because the return is a QString
+            # This string converting is needed because the return is a QString
             self.filepath = str(path)
             try:
                 self.saveCSVFile(self.filepath)
