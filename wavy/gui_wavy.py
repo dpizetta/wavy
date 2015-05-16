@@ -81,7 +81,8 @@ class GlobalBuffer():
         self.recording = False
 
     def clear(self):
-        self.data = np.empty(self.buffer_size)
+        tmp = self.data
+        self.data[:self.buffer_size] = tmp
         self.counter = 0
 
 global_buffer = GlobalBuffer()
@@ -199,7 +200,8 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         self.y = np.zeros(self._bufsize, dtype=np.float)
         # Initializes audio listener
         # :todo: needs to be separated the interval of plotting data from the acquire data.
-        self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
+        #self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
+        self.audio = AudioRecord("output.wav", 44100, 1024)
         self.audio.begin_audio()
         # Initializes the timer
         self.timer = QTimer()
