@@ -448,7 +448,7 @@ class MainWindow(QMainWindow):
     def savePNGFile(self, filepath):
         """Saves an image."""
 
-        filepath += ".png"
+        #filepath += ".png"
         logging.info('File path to save image: %s', filepath)
         exporter = exporters.ImageExporter(self.plot_widget_rec.plotItem)
         exporter.export(filepath)
@@ -456,7 +456,7 @@ class MainWindow(QMainWindow):
     def saveCSVFile(self, filepath):
         """Saves a data file."""
 
-        filepath += ".csv"
+        #filepath += ".csv"
         logging.info('File path to save data: %s', filepath)
         exporter = exporters.CSVExporter(self.plot_widget_rec.plotItem)
         exporter.export(filepath)
