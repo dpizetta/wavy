@@ -447,16 +447,18 @@ class MainWindow(QMainWindow):
 
     def savePNGFile(self, filepath):
         """Saves an image."""
-
-        #filepath += ".png"
+        # This extension should not be removed
+        # Exporter needs the extension to save correctly.
+        filepath += ".png"
         logging.info('File path to save image: %s', filepath)
         exporter = exporters.ImageExporter(self.plot_widget_rec.plotItem)
         exporter.export(filepath)
 
     def saveCSVFile(self, filepath):
         """Saves a data file."""
-
-        #filepath += ".csv"
+        # This extension should not be removed
+        # Exporter needs the extension to save correctly.
+        filepath += ".csv"
         logging.info('File path to save data: %s', filepath)
         exporter = exporters.CSVExporter(self.plot_widget_rec.plotItem)
         exporter.export(filepath)
@@ -466,22 +468,19 @@ class MainWindow(QMainWindow):
 
         path = QFileDialog.getSaveFileName(self,
                                            self.tr('Export recorded image ...'),
-                                           self.filepath,
+                                           os.path.splitext(self.filepath)[0] + '.png',
                                            self.tr("Image File (*.png)"))
         if not path == "":
             # This string converting is needed because the return is a QString
-            self.filepath = str(path)
+            self.filepath = os.path.splitext(str(path))[0]
             try:
                 self.savePNGFile(self.filepath)
             except Exception, e:
-                self.isSaved = False
                 QMessageBox.critical(self,
                                      self.tr('Critical'),
                                      self.tr('There was a problem to save image\n {}'.format(str(e))),
                                      QMessageBox.Ok)
             else:
-                self.isSaved = True
-                self.ui.actionSave_As.setEnabled(False)
                 logging.info('The image was saved in the file: %s', self.filepath)
                 QMessageBox.information(self,
                                         self.tr('Information'),
@@ -493,11 +492,11 @@ class MainWindow(QMainWindow):
 
         path = QFileDialog.getSaveFileName(self,
                                            self.tr('Save recorded data ...'),
-                                           self.filepath,
+                                           os.path.splitext(self.filepath)[0] + '.csv',
                                            self.tr("Data File (*.csv)"))
         if not path == "":
             # This string converting is needed because the return is a QString
-            self.filepath = str(path)
+            self.filepath = os.path.splitext(str(path))[0]
             try:
                 self.saveCSVFile(self.filepath)
             except Exception, e:
