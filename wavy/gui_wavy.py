@@ -16,6 +16,7 @@ import collections
 # this could be turned on or off easily. There are some examples bellow.
 import logging
 import os
+import math
 import time
 import pyqtgraph.exporters as exporters
 
@@ -63,7 +64,7 @@ def main(argv):
 class GlobalBuffer():
     """Allows real-time transfer of data between plots"""
 
-    def __init__(self, buffer_size=50):
+    def __init__(self, buffer_size=1024):
         self.recording = False
         self.buffer_size = buffer_size
         self.data = np.empty(self.buffer_size)
@@ -112,6 +113,7 @@ class RecordingPlotter(pg.PlotWidget):
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
         self.curve = None
+        self.counter = 0
         self.main_window = main_window
         global global_buffer
 
@@ -119,7 +121,9 @@ class RecordingPlotter(pg.PlotWidget):
         self._interval = int(self.sample_interval * 1000)
         self._bufsize = int(self.time_window / self.sample_interval)
         self.x = np.linspace(0.0, self.time_window, self._bufsize)
+        self.y = np.zeros(self._bufsize, dtype=np.float)
         self.setDownsampling(mode='peak')
+        self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.setClipToView(True)
         self.data = np.empty(5)
         self.ptr = 0
@@ -147,17 +151,20 @@ class RecordingPlotter(pg.PlotWidget):
             # We need to thing about something different here.
             self.main_window.stop()
 
-        return global_buffer.data[global_buffer.counter - 1]
+        self.counter += 1
+        return global_buffer.data[self.counter % global_buffer.buffer_size]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
+
         self.x[self.ptr + 1] = self.x[self.ptr] + self.sample_interval
         self.ptr += 1
+
         if self.ptr >= self.data.shape[0]:
             tmp = self.data
             xtmp = self.x
-            self.data = np.empty(self.data.shape[0] + 10)
-            self.x = np.empty(self.x.shape[0] + 10)
+            self.data = np.empty(self.data.shape[0] + 1)
+            self.x = np.empty(self.x.shape[0] + 1)
             self.data[:tmp.shape[0]] = tmp
             self.x[:xtmp.shape[0]] = xtmp
             self.curve.setData(self.x[:self.ptr], self.data[:self.ptr])
@@ -245,6 +252,7 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
             if global_buffer.counter >= global_buffer.buffer_size:
                 global_buffer.clear()
 
+        
             global_buffer.data[global_buffer.counter] = new
 
         return new
