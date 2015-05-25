@@ -1,17 +1,19 @@
 # Wavy
-Acquire sound from mic and saves as wave (.wav) or data (.dat). Wavy has two graphic areas which represents the real time data from mic (started when the software runs) and the recording area. 
+Acquire sound from mic and saves as data (.dat) or exports as image (.png). Wavy has two graphic areas, which represents the real time data from mic (started when the software runs), and the recording area that starts when clicked on Record button. All saved data is relative from recorded area.
 
 GENERAL PICTURE HERE.
 
-The recording area has three states: recording when the line is red, paused when the line is orange, and green when the recording was stoped.
+The recording area has three states: recording when the line is red, paused when the line is orange, and green when the recording was stopped.
+
+Wavy automatically suggests the name for your data when is saved as the new_wavy_data_yymmddHHMMSS.ext.
 
 ## Problems and improvements
 
-If you find any problems in this program, please let us know using the [Issues System] (https://github.com/dpizetta/wavy/issues) provided by the GitHub, this is the right way to keep us alert and provide information about the development for you. Thanks in advance.
+If you find any problems in this program, please let us know using the [Issues System] (https://github.com/dpizetta/wavy/issues) provided by GitHub. This is the correct way to keep us alert and how provide information about the development for you. Thanks in advance.
 
 ## About
 
-Wavy was developed to be a simple software to acquire data from microphone channel and plot them. The main use is to provide a method for Ruchardt's method in physics laboratory at Sao Carlos Institute of Physics - University of Sao Paulo.
+Wavy was developed to be a simple software to acquire data from microphone channel, plot and save them. The main use is to provide an acquisition software for Ruchardt's method in Physics Laboratory at Sao Carlos Institute of Physics - University of Sao Paulo.
 
 ## Authors
 
@@ -30,6 +32,23 @@ Technicians
 * Antenor Fabbri Petrilli Filho
 * Cláudio Boense Bretas
 * Jae Antonio de Castro Filho
+
+
+# Dependencies
+
+* Python >= 2.7 < 3
+* PyQt4
+* pyqtgraph
+* numpy
+* PyAudio (also PortAudio)
+
+Notes: The easiest way to install all those things is: 
+* Install Python 2.7 (or Anaconda/Miniconda that comes with numpy and other better libraries)
+* Use pip install pyqtgraph (installs PyQt4 automatically)
+* Use pip install numpy
+* Use pip install pyaudio
+
+For Windows users, PyAudio requires more things, the better way is to download the .exe installer from PyAudio website (that includes PortAudio) and install it. If you are using Anaconda or Miniconda, replace the 'pip' command for 'conda'.
 
 # Running the code
 
