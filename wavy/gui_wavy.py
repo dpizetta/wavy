@@ -206,8 +206,8 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         self.x = np.linspace(-self.time_window, 0.0, self._bufsize)
         self.y = np.zeros(self._bufsize, dtype=np.float)
         # Initializes audio listener
-        # :todo: needs to be separated the interval of plotting data from the acquire data.
-        #self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
+        # :TODO: needs to be separated the interval of plotting data from the acquire data.
+        # self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
         self.audio = AudioRecord("output.wav", 44100, 1024)
         self.audio.begin_audio()
         # Initializes the timer
@@ -252,7 +252,6 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
             if global_buffer.counter >= global_buffer.buffer_size:
                 global_buffer.clear()
 
-        
             global_buffer.data[global_buffer.counter] = new
 
         return new
