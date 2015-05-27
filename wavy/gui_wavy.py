@@ -112,7 +112,6 @@ class RecordingPlotter(pg.PlotWidget):
         self.setLabel('left', 'Amplitude', 'V')
         self.setLabel('bottom', 'Time', 's')
         self.curve = None
-        self.counter = 0
         self.main_window = main_window
         global global_buffer
 
@@ -147,20 +146,18 @@ class RecordingPlotter(pg.PlotWidget):
             # We need to thing about something different here.
             self.main_window.stop()
 
-        self.counter += 1
-        return global_buffer.data[self.counter % global_buffer.buffer_size]
+        return global_buffer.data[self.ptr % global_buffer.buffer_size]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
-
         self.x[self.ptr + 1] = self.x[self.ptr] + self.sample_interval
         self.ptr += 1
 
         if self.ptr >= self.data.shape[0]:
             tmp = self.data
             xtmp = self.x
-            self.data = np.empty(self.data.shape[0] + 1)
-            self.x = np.empty(self.x.shape[0] + 1)
+            self.data = np.empty(self.data.shape[0] + 50)
+            self.x = np.empty(self.x.shape[0] + 50)
             self.data[:tmp.shape[0]] = tmp
             self.x[:xtmp.shape[0]] = xtmp
             self.curve.setData(self.x[:self.ptr], self.data[:self.ptr])
@@ -204,7 +201,7 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         # Initializes audio listener
         # :TODO: needs to be separated the interval of plotting data from the acquire data.
         # self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
-        self.audio = AudioRecord("output.wav", 44100, 1024)
+        self.audio = AudioRecord("output.wav", 44100, 44100*self.sample_interval)
         self.audio.begin_audio()
         # Initializes the timer
         self.timer = QTimer()
@@ -242,9 +239,14 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         b = self.audio.get_data_from_audio()[1]
         new = b[0]
 
+        # This clipping of the signal prevents pyqtgraph from breaking due
+        # to large random noise when some soundcards are initiated.
+        # Prevents input overflow when program starts.
+        if new > 1e+150:
+            new = 1e+150
+
         if global_buffer.recording is True:
             global_buffer.counter += 1
-
             if global_buffer.counter >= global_buffer.buffer_size:
                 global_buffer.clear()
 
