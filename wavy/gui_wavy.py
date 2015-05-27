@@ -116,7 +116,9 @@ class RecordingPlotter(pg.PlotWidget):
         global global_buffer
 
     def initData(self):
-        self._interval = int(self.sample_interval * 1000)
+        # Forces update at 20 FPS, shouldn't be taxing to most systems
+        self._interval = int(1/20 * 1000)
+
         self._bufsize = int(self.time_window / self.sample_interval)
         self.x = np.linspace(0.0, self.time_window, self._bufsize)
         self.setDownsampling(mode='peak')
@@ -146,7 +148,10 @@ class RecordingPlotter(pg.PlotWidget):
             # We need to thing about something different here.
             self.main_window.stop()
 
-        return global_buffer.data[self.ptr % global_buffer.buffer_size]
+        while (self.ptr >= global_buffer.counter):
+            self.ptr -= 1
+
+        return global_buffer.data[(self.ptr % global_buffer.buffer_size)]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
@@ -156,8 +161,8 @@ class RecordingPlotter(pg.PlotWidget):
         if self.ptr >= self.data.shape[0]:
             tmp = self.data
             xtmp = self.x
-            self.data = np.empty(self.data.shape[0] + 50)
-            self.x = np.empty(self.x.shape[0] + 50)
+            self.data = np.empty(self.data.shape[0] + 5)
+            self.x = np.empty(self.x.shape[0] + 5)
             self.data[:tmp.shape[0]] = tmp
             self.x[:xtmp.shape[0]] = xtmp
             self.curve.setData(self.x[:self.ptr], self.data[:self.ptr])
@@ -193,16 +198,21 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
     def initData(self):
         """Initializes data for for plotting."""
 
-        self._interval = int(self.sample_interval * 1000)
+        #self.sample_interval = 0.01
+
+        # Forces update at 20 FPS, shouldn't be taxing to most systems
+        self._interval = int(1/20 * 1000)
+
         self._bufsize = int(self.time_window / self.sample_interval)
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.x = np.linspace(-self.time_window, 0.0, self._bufsize)
         self.y = np.zeros(self._bufsize, dtype=np.float)
         # Initializes audio listener
-        # :TODO: needs to be separated the interval of plotting data from the acquire data.
-        # self.audio = AudioRecord("output.wav", 1. / self.sample_interval * 10, 1)
-        self.audio = AudioRecord("output.wav", 44100, 44100*self.sample_interval)
+        self.audio = AudioRecord("output.wav", self.sample_interval)
         self.audio.begin_audio()
+
+        # :TODO: needs to be separated the interval of plotting data from the acquire data.
+        
         # Initializes the timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
@@ -285,10 +295,10 @@ class MainWindow(QMainWindow):
         # Initial state is none because there is no data acquired yet
         self.isSaved = None
 
-        self.ui.doubleSpinBoxSampleInterval.setMinimum(0.00001)
-        self.ui.doubleSpinBoxSampleInterval.setMaximum(0.01)
+        self.ui.doubleSpinBoxSampleInterval.setMinimum(0.01)
+        self.ui.doubleSpinBoxSampleInterval.setMaximum(0.5)
         self.ui.doubleSpinBoxSampleInterval.setValue(0.01)
-        self.ui.doubleSpinBoxSampleInterval.setSingleStep(0.001)
+        self.ui.doubleSpinBoxSampleInterval.setSingleStep(0.01)
 
         # Connecting actions
         # File actions

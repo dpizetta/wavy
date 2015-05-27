@@ -1,14 +1,16 @@
 import pyaudio
 import wave
+import time
 import numpy
 
 
 class AudioRecord():
 
-    def __init__(self, filename="output.wav", rate=1000, chunk=1):
+    def __init__(self, filename="output.wav", interval=1):
         self.outputFilename = filename
-        self.rate = int(rate)
-        self.chunk = int(chunk)
+        self.rate = 22050
+        self.interval = interval
+        self.chunk = 1024
         self.format = pyaudio.paInt16
         self.channels = 1
         self.port = None
@@ -20,6 +22,11 @@ class AudioRecord():
         # Initializes just if there is no self.stream opened yet
         if self.stream is None:
             self.port = pyaudio.PyAudio()
+
+            # Forces the soundcard's prefered sample rate 
+            self.rate = int(self.port.get_device_info_by_index(0)['defaultSampleRate'])
+            self.chunk = int(self.interval * self.rate)
+
             self.stream = self.port.open(format=self.format, channels=self.channels, rate=self.rate, input=True, frames_per_buffer=self.chunk)
             self.stream.stop_stream()
 
@@ -35,6 +42,7 @@ class AudioRecord():
             data_stream = self.stream.read(self.chunk)
             # Array of float normalized 0 - 5V
             data_array = (numpy.fromstring(data_stream, dtype=numpy.int16) / 32768.0) * 5.0
+        
         # :todo: Needs some valid return if the self.stream is none.
         return data_stream, data_array
 
