@@ -70,7 +70,6 @@ class GlobalBuffer():
         self.data = np.empty(self.buffer_size)
         self.counter = 0
         self.timestamp = 0
-        self.elapsed_time = 0
         self.time_limit = 0
 
     def startRecording(self):
@@ -121,7 +120,6 @@ class RecordingPlotter(pg.PlotWidget):
         self._interval = int(self.sample_interval * 1000)
         self._bufsize = int(self.time_window / self.sample_interval)
         self.x = np.linspace(0.0, self.time_window, self._bufsize)
-        self.y = np.zeros(self._bufsize, dtype=np.float)
         self.setDownsampling(mode='peak')
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
         self.setClipToView(True)
@@ -143,9 +141,7 @@ class RecordingPlotter(pg.PlotWidget):
         self.initData()
 
     def getdata(self):
-        global_buffer.elapsed_time = int(time.time() - global_buffer.timestamp)
-
-        if global_buffer.time_limit != 0 and global_buffer.elapsed_time >= global_buffer.time_limit:
+        if global_buffer.time_limit != 0 and self.x[self.ptr] >= global_buffer.time_limit:
             # this is not a good way to stop because you need the parent,
             # and the parents stop method calls your methods.
             # We need to thing about something different here.
