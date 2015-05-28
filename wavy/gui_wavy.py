@@ -134,8 +134,6 @@ class RecordingPlotter(pg.PlotWidget):
 
     def setSampleInterval(self, sample_interval):
         self.sample_interval = sample_interval
-        self.curve.clear()
-        self.initData()
 
     def setTimeWindow(self, time_window):
         self.time_window = time_window
@@ -339,8 +337,10 @@ class MainWindow(QMainWindow):
 
         # Inputs
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget.setSampleInterval)
+        self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget_rec.setSampleInterval)
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
-        self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
+
+        #self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
         self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
 
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
