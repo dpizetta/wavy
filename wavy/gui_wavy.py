@@ -126,6 +126,7 @@ class RecordingPlotter(pg.PlotWidget):
         self.setClipToView(True)
         self.data = np.empty(5)
         self.ptr = 0
+        self.counter = 0
         self.curve = self.plot(self.x[:self.ptr], self.data[:self.ptr], antialias=True)
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
@@ -148,15 +149,16 @@ class RecordingPlotter(pg.PlotWidget):
             # We need to thing about something different here.
             self.main_window.stop()
 
-        while (self.ptr >= global_buffer.counter):
-            self.ptr -= 1
+        while (self.counter  > global_buffer.counter and self.counter > 0):
+            self.counter -= 1
 
-        return global_buffer.data[(self.ptr % global_buffer.buffer_size)]
+        return global_buffer.data[(self.counter % global_buffer.buffer_size)]
 
     def updateplot(self):
         self.data[self.ptr] = self.getdata()
         self.x[self.ptr + 1] = self.x[self.ptr] + self.sample_interval
         self.ptr += 1
+        self.counter += 1
 
         if self.ptr >= self.data.shape[0]:
             tmp = self.data
