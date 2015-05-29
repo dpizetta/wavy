@@ -1,7 +1,7 @@
 # Wavy
-Acquire sound from mic and saves as data (.dat) or exports as image (.png). Wavy has two graphic areas, which represents the real time data from mic (started when the software runs), and the recording area that starts when clicked on Record button. All saved data is relative from recorded area.
+Wavy acquire signals from mic and saves as data (.csv) or exports as image (.png). Wavy has two graphic areas, which represents the real time data from mic (started when the software runs), and the recording area that starts when clicked on Record button. All saved data is relative from recorded area.
 
-GENERAL PICTURE HERE.
+https://cloud.githubusercontent.com/assets/5084939/7890891/5014ffee-061f-11e5-84c9-b3c77f91f123.png
 
 The recording area has three states: recording when the line is red, paused when the line is orange, and green when the recording was stopped.
 
