@@ -294,10 +294,10 @@ class MainWindow(QMainWindow):
         self.filepath = ""
         # Initial state is none because there is no data acquired yet
         self.isSaved = None
-
-        self.ui.doubleSpinBoxSampleInterval.setMinimum(0.01)
+        # Sample interval should be 0.02s to not overflow in XP
+        self.ui.doubleSpinBoxSampleInterval.setMinimum(0.02)
         self.ui.doubleSpinBoxSampleInterval.setMaximum(0.5)
-        self.ui.doubleSpinBoxSampleInterval.setValue(0.01)
+        self.ui.doubleSpinBoxSampleInterval.setValue(0.02)
         self.ui.doubleSpinBoxSampleInterval.setSingleStep(0.01)
 
         # Connecting actions
