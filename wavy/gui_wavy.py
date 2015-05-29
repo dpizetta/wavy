@@ -46,17 +46,23 @@ def main(argv):
     wavy.setOrganizationName("Sao Carlos Institute of Physics - University of Sao Paulo")
     wavy.setOrganizationDomain("www.ifsc.usp.br")
 
-    pixmap = QPixmap("images/symbol.png")
+    pixmap = QPixmap("wavy/images/symbol.png")
     splash = QSplashScreen(pixmap)
+
+    start = time.time() 
     splash.show()
     splash.repaint()
+
     splash.showMessage("Loading...")
     wavy.processEvents()
-    splash.showMessage("Starting...")
-    wavy.processEvents()
+
+    while time.time() - start < 2:
+        time.sleep(0.001)
+        wavy.processEvents()
+        splash.showMessage("Starting...")
+
     window = MainWindow()
     window.showMaximized()
-    time.sleep(0)
     splash.finish(window)
     return wavy.exec_()
 
