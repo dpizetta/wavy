@@ -30,7 +30,7 @@ from wavy.mw_wavy import Ui_MainWindow
 
 logging.basicConfig(level=logging.INFO)
 
-__version__ = "0.2"
+__version__ = "1.0"
 __app_name__ = "Wavy"
 
 about = '<h3>{} v.{}</h3><p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
