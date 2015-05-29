@@ -91,7 +91,7 @@ global_buffer = GlobalBuffer()
 class RecordingPlotter(pg.PlotWidget):
     """Plots sub data from real time plotter."""
 
-    def __init__(self, sample_interval=0.01, time_window=20., main_window=None, parent=None):
+    def __init__(self, sample_interval=0.02, time_window=20., main_window=None, parent=None):
         """Constructor of the class.
 
         :param sample_interval: sample interval
@@ -174,7 +174,7 @@ class RecordingPlotter(pg.PlotWidget):
 class RealTimeRecordingPlotter(pg.PlotWidget):
     """Plots data (audio) in real time."""
 
-    def __init__(self, sample_interval=0.01, time_window=20., parent=None):
+    def __init__(self, sample_interval=0.02, time_window=20., parent=None):
         """Constructor of the class.
 
         :param sample_interval: sample interval
@@ -329,10 +329,10 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout_Wavy.triggered.connect(self.about)
 
         # Plot widget
-        self.plot_widget = RealTimeRecordingPlotter(sample_interval=0.01, time_window=20.)
+        self.plot_widget = RealTimeRecordingPlotter(sample_interval=0.02, time_window=20.)
         self.plot_widget.initData()
         self.ui.gridLayout_2.addWidget(self.plot_widget, 0, 1)
-        self.plot_widget_rec = RecordingPlotter(sample_interval=0.01, time_window=5., main_window=self)
+        self.plot_widget_rec = RecordingPlotter(sample_interval=0.02, time_window=5., main_window=self)
         self.ui.gridLayout_2.addWidget(self.plot_widget_rec, 1, 1)
 
         # Inputs
