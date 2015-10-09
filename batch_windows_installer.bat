@@ -1,18 +1,12 @@
-echo "Initiating installer, downloading files"
-mkdir C:\Wavy
-echo "Downloading Miniconda ..."
-cscript.exe downloadfiles.vbs "https://repo.continuum.io/miniconda/Miniconda-latest-Windows-x86.exe" "C:\Wavy\Miniconda-latest-Windows-x86.exe" 
-echo "Downloading PyAudio ..."
-cscript.exe downloadfiles.vbs "https://people.csail.mit.edu/hubert/pyaudio/packages/pyaudio-current.py27.exe" "C:\Wavy\pyaudio-current.py27.exe" 
-echo "Installing Miniconda ..."
-C:\Wavy\Miniconda-latest-Windows-x86.exe
-echo "Updating Miniconda ..."
-conda update conda
+
+C:\Miniconda\Scripts\conda update conda
 echo "Instaling dependencies: Numpy ..."
-conda install numpy
+C:\Miniconda\Scripts\conda install numpy
 echo "Instaling dependencies: PyQtGraph ..."
-conda install pyqtgraph
+C:\Miniconda\Scripts\conda install pyqtgraph
+echo "Instaling dependencies: PyQt ..."
+C:\Miniconda\Scripts\conda install pyqt
 echo "Installing PyAudio ..."
 C:\Wavy\pyaudio-current.py27.exe
 echo "Installing Wavy ..."
-C:\Miniconda32\python.exe setup.py install
+C:\Miniconda\python.exe .\setup.py install
