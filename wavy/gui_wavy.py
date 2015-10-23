@@ -85,6 +85,7 @@ class GlobalBuffer():
     def stopRecording(self):
         self.timestamp = 0
         self.recording = False
+        self.counter = 0
 
     def clear(self):
         tmp = self.data
