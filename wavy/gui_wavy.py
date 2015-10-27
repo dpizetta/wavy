@@ -475,7 +475,9 @@ class MainWindow(QMainWindow):
         # Exporter needs the extension to save correctly.
         filepath += ".png"
         logging.info('File path to save image: %s', filepath)
+        self.plot_widget_rec.setBackground('w')
         exporter = exporters.ImageExporter(self.plot_widget_rec.plotItem)
+        self.plot_widget_rec.setBackground('k')
         exporter.export(filepath)
 
     def saveCSVFile(self, filepath):
