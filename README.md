@@ -50,6 +50,12 @@ Notes: The easiest way to install all those things is:
 
 For Windows users, PyAudio requires more things, the better way is to download the .exe installer from PyAudio website (that includes PortAudio) and install it. If you are using Anaconda or Miniconda, replace the 'pip' command for 'conda'.
 
+# Running binaries
+
+To be practical, now we can provide binaries for Windows and Linux. The binaries are not small (200MB) but have everything you need. Don't need to install, just download and click to execute.
+
+Please, see Realises page: https://github.com/dpizetta/wavy/releases
+
 # Running the code
 
 To run wavy without installing, use
