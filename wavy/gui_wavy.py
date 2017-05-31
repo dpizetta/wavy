@@ -12,25 +12,25 @@ Wavy is a simple program that allows you to acquire sound from mic and save as .
 from PyQt4.QtCore import QTimer
 from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMessageBox, QFileDialog
 import collections
-# Instead of using prints in your code, use logging.info,
-# this could be turned on or off easily. There are some examples bellow.
 import logging
-import os
 import math
+import os
 import time
-import pyqtgraph.exporters as exporters
 
 import numpy as np
 import pyqtgraph as pg
+import pyqtgraph.exporters as exporters
 from wavy.core_wavy import AudioRecord
 from wavy.gui_wav2dat import ConvertWave2Data
 import wavy.images.rc_wavy_rc
 from wavy.mw_wavy import Ui_MainWindow
 
 
+# Instead of using prints in your code, use logging.info,
+# this could be turned on or off easily. There are some examples bellow.
 logging.basicConfig(level=logging.INFO)
 
-__version__ = "1.0"
+__version__ = "1.0.1"
 __app_name__ = "Wavy"
 
 about = '<h3>{} v.{}</h3><p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
@@ -49,7 +49,7 @@ def main(argv):
     pixmap = QPixmap("wavy/images/symbol.png")
     splash = QSplashScreen(pixmap)
 
-    start = time.time() 
+    start = time.time()
     splash.show()
     splash.repaint()
 
@@ -124,7 +124,7 @@ class RecordingPlotter(pg.PlotWidget):
 
     def initData(self):
         # Forces update at 20 FPS, shouldn't be taxing to most systems
-        self._interval = int(1/20 * 1000)
+        self._interval = int(1 / 20 * 1000)
 
         self._bufsize = int(self.time_window / self.sample_interval)
         self.x = np.linspace(0.0, self.time_window, self._bufsize)
@@ -154,7 +154,7 @@ class RecordingPlotter(pg.PlotWidget):
             # We need to thing about something different here.
             self.main_window.stop()
 
-        while (self.counter  > global_buffer.counter and self.counter > 0):
+        while (self.counter > global_buffer.counter and self.counter > 0):
             self.counter -= 1
 
         return global_buffer.data[(self.counter % global_buffer.buffer_size)]
@@ -208,7 +208,7 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         #self.sample_interval = 0.01
 
         # Forces update at 20 FPS, shouldn't be taxing to most systems
-        self._interval = int(1/20 * 1000)
+        self._interval = int(1 / 20 * 1000)
 
         self._bufsize = int(self.time_window / self.sample_interval)
         self.databuffer = collections.deque([0.0] * self._bufsize, self._bufsize)
@@ -216,10 +216,17 @@ class RealTimeRecordingPlotter(pg.PlotWidget):
         self.y = np.zeros(self._bufsize, dtype=np.float)
         # Initializes audio listener
         self.audio = AudioRecord("output.wav", self.sample_interval)
-        self.audio.begin_audio()
+        try:
+            self.audio.begin_audio()
+        except IOError:
+            QMessageBox.information(self,
+                                    self.tr('Information'),
+                                    self.tr('No input device found, please make sure to plug it before open the program. Please, restart the program and try again.'),
+                                    QMessageBox.Ok)
+            exit(1)
 
         # :TODO: needs to be separated the interval of plotting data from the acquire data.
-        
+
         # Initializes the timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateplot)
@@ -347,7 +354,7 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.plot_widget_rec.setSampleInterval)
         self.ui.doubleSpinBoxSampleInterval.valueChanged.connect(self.setSampleRate)
 
-        #self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
+        # self.ui.doubleSpinBoxSampleRate.valueChanged.connect(self.setSampleInterval)
         self.ui.spinBoxWindowTime.valueChanged.connect(self.plot_widget.setTimeWindow)
 
         self.setSampleRate(self.ui.doubleSpinBoxSampleInterval.value())
@@ -501,7 +508,7 @@ class MainWindow(QMainWindow):
             self.filepath = os.path.splitext(str(path))[0]
             try:
                 self.savePNGFile(self.filepath)
-            except Exception, e:
+            except Exception as e:
                 QMessageBox.critical(self,
                                      self.tr('Critical'),
                                      self.tr('There was a problem to save image\n {}'.format(str(e))),
@@ -525,7 +532,7 @@ class MainWindow(QMainWindow):
             self.filepath = os.path.splitext(str(path))[0]
             try:
                 self.saveCSVFile(self.filepath)
-            except Exception, e:
+            except Exception as e:
                 self.isSaved = False
                 QMessageBox.critical(self,
                                      self.tr('Critical'),

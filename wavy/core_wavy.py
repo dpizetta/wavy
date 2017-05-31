@@ -1,7 +1,8 @@
-import pyaudio
-import wave
 import time
+import wave
+
 import numpy
+import pyaudio
 
 
 class AudioRecord():
@@ -23,7 +24,7 @@ class AudioRecord():
         if self.stream is None:
             self.port = pyaudio.PyAudio()
 
-            # Forces the soundcard's prefered sample rate 
+            # Forces the soundcard's prefered sample rate
             self.rate = int(self.port.get_device_info_by_index(0)['defaultSampleRate'])
             self.chunk = int(self.interval * self.rate)
 
@@ -42,7 +43,7 @@ class AudioRecord():
             data_stream = self.stream.read(self.chunk)
             # Array of float normalized 0 - 5V
             data_array = (numpy.fromstring(data_stream, dtype=numpy.int16) / 32768.0) * 5.0
-        
+
         # :todo: Needs some valid return if the self.stream is none.
         return data_stream, data_array
 
