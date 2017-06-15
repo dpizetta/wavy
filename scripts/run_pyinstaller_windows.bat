@@ -1,7 +1,7 @@
 python get_version.py
 set /p texte=< got_version.temp  
 
-set DATESTAMP=%DATE:~10,4%%DATE:~4,2%%DATE:~7,2%
+set DATESTAMP=%DATE:~6,4%%DATE:~3,2%%DATE:~0,2%
 set TIMESTAMP=%TIME:~0,2%%TIME:~3,2%
 set NAME=Wavy
 set SYSTEM=windows
@@ -20,7 +20,7 @@ del ".\build" /Q
 del "*pycache*"
 del ".\dist" /Q
 
-pyinstaller TORM_IDE.py ^
+pyinstaller run.py ^
 	--noconfirm ^
 	--clean ^
 	--log-level=INFO ^
@@ -36,6 +36,7 @@ echo "Compressing files ..."
 cd .\dist
 "C:\Program Files\7-Zip\7z.exe" a -tzip "%EXECUTABLE%.zip"  "%EXECUTABLE%.exe" "checksum.md5" "lib_versions.info"
 cd ..
+cd scripts
 
 echo "Process finished ..."
 
