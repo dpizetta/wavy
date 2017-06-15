@@ -28,9 +28,9 @@ from wavy.mw_wavy import Ui_MainWindow
 
 # Instead of using prints in your code, use logging.info,
 # this could be turned on or off easily. There are some examples bellow.
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __app_name__ = "Wavy"
 
 about = '<h3>{} v.{}</h3><p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
@@ -504,9 +504,9 @@ class MainWindow(QMainWindow):
                                            os.path.splitext(self.filepath)[0] + '.png',
                                            self.tr("Image File (*.png)"))
         if not path == "":
-            # This string converting is needed because the return is a QString
-            self.filepath = os.path.splitext(str(path))[0]
             try:
+                # This string converting is needed because the return is a QString
+                self.filepath = os.path.splitext(unicode(path))[0]
                 self.savePNGFile(self.filepath)
             except Exception as e:
                 QMessageBox.critical(self,
@@ -528,9 +528,9 @@ class MainWindow(QMainWindow):
                                            os.path.splitext(self.filepath)[0] + '.csv',
                                            self.tr("Data File (*.csv)"))
         if not path == "":
-            # This string converting is needed because the return is a QString
-            self.filepath = os.path.splitext(str(path))[0]
             try:
+                # This string converting is needed because the return is a QString
+                self.filepath = os.path.splitext(unicode(path))[0]
                 self.saveCSVFile(self.filepath)
             except Exception as e:
                 self.isSaved = False
