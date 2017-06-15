@@ -544,7 +544,7 @@ class MainWindow(QMainWindow):
                 logging.info('The data was saved in the file: %s', self.filepath)
                 QMessageBox.information(self,
                                         self.tr('Information'),
-                                        self.tr('Data was successfully saved.'),
+                                        self.tr('Data was successfully saved.\n\nDATA SAVED IS REPRESENTED BY THE WINDOW RECORDING, IF YOU APPLY ZOOM ON IT, JUST DATA VISIBLE WILL BE SAVED!'),
                                         QMessageBox.Ok)
 
     def about(self):
