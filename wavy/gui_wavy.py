@@ -16,7 +16,7 @@ import logging
 import math
 import os
 import time
-
+import json
 import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.exporters as exporters
@@ -30,7 +30,7 @@ from wavy.mw_wavy import Ui_MainWindow
 # this could be turned on or off easily. There are some examples bellow.
 logging.basicConfig(level=logging.DEBUG)
 
-__version__ = "1.0.2"
+__version__ = "1.1"
 __app_name__ = "Wavy"
 
 about = '<h3>{} v.{}</h3><p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
@@ -60,10 +60,18 @@ def main(argv):
         time.sleep(0.001)
         wavy.processEvents()
         splash.showMessage("Starting...")
-
     window = MainWindow()
     window.showMaximized()
     splash.finish(window)
+    
+    try:
+        with open('wavy.config', 'r') as json_file:  
+            data = json.load(json_file)
+            window.base_path = data['data_folder']
+            logging.info('Data folder is: %s', window.base_path)
+    except IOError:
+        window.getDataFolder()
+        
     return wavy.exec_()
 
 
@@ -381,8 +389,8 @@ class MainWindow(QMainWindow):
         # Creates auto naming filename
         filename = 'new_wavy_data_' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
         # Gets the current directory
-        base_path = os.path.abspath(".")
-        self.filepath = os.path.join(base_path, filename)
+        #base_path = os.path.abspath(".")
+        self.filepath = os.path.join(self.base_path, filename)
         self.setWindowFilePath(self.filepath)
 
     def record(self):
@@ -496,6 +504,37 @@ class MainWindow(QMainWindow):
         exporter = exporters.CSVExporter(self.plot_widget_rec.plotItem)
         exporter.export(filepath)
 
+    def getDataFolder(self):
+        """Get data folder option."""
+        
+        answer = QMessageBox.question(self,
+                                        self.tr('Question'),
+                                        self.tr('It seems the first time you run Wavy. Do you want to choose a folder to save future data?.'),
+                                        QMessageBox.Yes | QMessageBox.No)
+        if answer == QMessageBox.Yes:
+            path = QFileDialog.getExistingDirectory(self,
+                                                   self.tr('Data folder'),
+                                                   os.path.expanduser('~'))
+            if not path == "":
+                try:
+                    # This string converting is needed because the return is a QString
+                    self.base_path = os.path.splitext(unicode(path))[0]
+                    with open('wavy.config', 'w') as outfile:  
+                        json.dump({'data_folder':self.base_path}, outfile)
+                except Exception as e:
+                    QMessageBox.critical(self,
+                                         self.tr('Critical'),
+                                         self.tr('There was a problem set default folder to save data\n {}'.format(str(e))),
+                                         QMessageBox.Ok)
+                else:
+                    logging.info('The default folder is: %s', self.base_path)
+                    QMessageBox.information(self,
+                                            self.tr('Information'),
+                                            self.tr('Default folder to save data setup.'),
+                                            QMessageBox.Ok)
+        else:
+            self.base_path = '.'
+        
     def saveImageAs(self):
         """Saves image as."""
 
