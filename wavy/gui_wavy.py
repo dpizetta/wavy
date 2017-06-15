@@ -14,6 +14,7 @@ from PyQt4.QtGui import QApplication, QPixmap, QSplashScreen, QMainWindow, QMess
 import collections
 import logging
 import math
+import urllib2
 import os
 import time
 import json
@@ -30,7 +31,7 @@ from wavy.mw_wavy import Ui_MainWindow
 # this could be turned on or off easily. There are some examples bellow.
 logging.basicConfig(level=logging.DEBUG)
 
-__version__ = "1.1"
+__version__ = "1.2"
 __app_name__ = "Wavy"
 
 about = '<h3>{} v.{}</h3><p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of Physics<br/>University of Sao Paulo</p><p>Wavy is a simple program that allows you to acquire sound from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: <a href="https://github.com/dpizetta/wavy">Wavy on GitHub</a>.</p><p>This software is under <a href="http://choosealicense.com/licenses/mit/">MIT</a> license. 2015.</p>'.format(__app_name__, __version__)
@@ -71,7 +72,7 @@ def main(argv):
             logging.info('Data folder is: %s', window.base_path)
     except IOError:
         window.getDataFolder()
-        
+   
     return wavy.exec_()
 
 
@@ -310,7 +311,24 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.labelAbout.setText(self.tr(about))
+        self.update = "NOT CHECKED ..."
+        
+        try:
+            response = urllib2.urlopen('https://api.github.com/repos/dpizetta/wavy/releases/latest', timeout=20)
+            tag_version = json.loads(response.read())
+        except Exception:
+            pass
+        else:
+            if str(__version__) == str(tag_version['tag_name'][1:]):
+                self.update = "UP TO DATE!"
+            else:
+                self.update = "NEW VERSION AVALIABLE!"
+                QMessageBox.information(self,
+                                        self.tr('Information'),
+                                        self.tr('<p>Oh, there is a new version ({}) of this awesome software avaliable. \nGo to <a href="https://github.com/dpizetta/wavy/releases/latest">download!</a></p>.'.format(tag_version['tag_name'])),
+                                        QMessageBox.Ok)
+                
+        self.ui.labelAbout.setText(self.tr(about + "\nVERSION STATUS: " + self.update))
         self.setWindowTitle(__app_name__ + '  ' + __version__)
 
         self.filepath = ""
