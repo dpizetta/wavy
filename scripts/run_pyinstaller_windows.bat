@@ -3,6 +3,7 @@ set /p texte=< got_version.temp
 
 set DATESTAMP=%DATE:~6,4%%DATE:~3,2%%DATE:~0,2%
 set TIMESTAMP=%TIME:~0,2%%TIME:~3,2%
+IF "%TIME:~0,1%" == " " SET TIMESTAMP=0%TIME:~1,1%%TIME:~3,2%
 set NAME=Wavy
 set SYSTEM=windows
 set /p VERSION=< got_version.temp
