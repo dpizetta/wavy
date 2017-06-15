@@ -540,7 +540,7 @@ class MainWindow(QMainWindow):
                                      QMessageBox.Ok)
             else:
                 self.isSaved = True
-                self.ui.actionSave_As.setEnabled(False)
+                #self.ui.actionSave_As.setEnabled(False)
                 logging.info('The data was saved in the file: %s', self.filepath)
                 QMessageBox.information(self,
                                         self.tr('Information'),
