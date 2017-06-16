@@ -3,9 +3,11 @@ Wavy acquire signals from microfone input device, plot and saves as data (.csv) 
 
 ![alt tag](https://cloud.githubusercontent.com/assets/5084939/7890891/5014ffee-061f-11e5-84c9-b3c77f91f123.png)
 
-The recording area has three states: recording when the line is red, paused when the line is orange, and green when the recording was stopped.
+The recording area has three states: recording when the line is red, paused when the line is orange, and green when the recording was stopped. Wavy automatically suggests the name for your data when is saved as the new_wavy_data_yymmddHHMMSS.ext.
 
-Wavy automatically suggests the name for your data when is saved as the new_wavy_data_yymmddHHMMSS.ext.
+Please, if you use this software cite us: [![DOI](https://zenodo.org/badge/31438894.svg)](https://zenodo.org/badge/latestdoi/31438894)
+
+You know [Zenodo](https://zenodo.org/)? A way to cite software using DOI!
 
 # Download binaries
 
