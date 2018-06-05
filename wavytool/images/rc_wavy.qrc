@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icon.png</file>
+    <file>backgroud.png</file>
+    <file>exit.png</file>
+    <file>new.png</file>
+    <file>open.png</file>
+    <file>pause.png</file>
+    <file>record.png</file>
+    <file>save_as.png</file>
+    <file>save.png</file>
+    <file>stop.png</file>
+    <file>symbol.png</file>
+    <file>waves.png</file>
+  </qresource>
+</RCC>
