@@ -1,5 +1,6 @@
-# Wavy
-Wavy acquire signals from microfone input device, plot and saves as data (.csv) or exports as image (.png, .tif, etc). Wavy has two graphic areas, which represents the real time data from input (started when the software runs), and the recording area that starts when clicked on Record button. All saved data is relative to visible recording area.
+# Wavy Tool
+
+Wavy acquire signals from microphone input device, plot and saves as data (.csv) or exports as image (.png, .tif, etc). Wavy has two graphic areas, which represents the real time data from input (started when the software runs), and the recording area that starts when clicked on Record button. All saved data is relative to visible recording area.
 
 ![alt tag](https://cloud.githubusercontent.com/assets/5084939/7890891/5014ffee-061f-11e5-84c9-b3c77f91f123.png)
 
@@ -9,17 +10,17 @@ Please, if you use this software cite us: [![DOI](https://zenodo.org/badge/31438
 
 You know [Zenodo](https://zenodo.org/)? A way to cite software using DOI!
 
-# Download binaries
+## Download binaries
 
 To be practical, now we can provide binaries for Windows and Linux. The binaries are not small (200MB) but have everything you need. You don't need to install, just download and click to execute.
 
 Please, see Releases page: https://github.com/dpizetta/wavy/releases
 
-# First steps with Wavy
+## First steps with Wavy
 
-After download Wavy you can extract the executable. We sugest you create a folder Wavy to put the executable and the configuration file that will be created, creating a link (icon) to access it from Desktop area.  To run it, just double click.
+After download Wavy you can extract the executable. We suggest you create a folder Wavy to put the executable and the configuration file that will be created, creating a link (icon) to access it from Desktop area.  To run it, just double click.
 
-When you run it the first time, it will let you to choose the default folder to place future data files. We sugest that you create a new folder "Wavy Data" in Documents or Desktop area for easy access. This procedure will create a file that stays with the executable called "wavy.config", to keep that information and future configurations.
+When you run it the first time, it will let you to choose the default folder to place future data files. We suggest that you create a new folder "Wavy Data" in Documents or Desktop area for easy access. This procedure will create a file that stays with the executable called "wavy.config", to keep that information and future configurations.
 
 The control of the program is very easy. The top plot show the real time data from input device. Then we can start recording by clicking the Record button.
 
@@ -29,18 +30,21 @@ And finally, you can stop recording by clicking on Stop button. Now, the buttons
 
 By clicking on save button you can save data from recording area to CSV file. Also, you can export an image file using the exporter.
 
-## Note about saving recorded data
+### Note about saving recorded data
+
 If you zoom in the recording plot, the data saved will represent just the data visible in the window. So make sure you not lost data.
 
-## Some other features on plots
+### Some other features on plots
+
 The plots are provided by PyQtGraph, and if you right click on the plot you will see some nice features including other options to export data. Also you can zoom in and out using the mouse and move it.
 
-## Input device not found
-If the is no input device plugged in (or internal microfone) the program will show a message and exit at this moment, we need future improvement in this way.
+### Input device not found
+
+If the is no input device plugged in (or internal microphone) the program will show a message and exit at this moment, we need future improvement in this way.
 
 ## Problems and improvements
 
-If you find any problems in this program, please let us know using the [Issues System] (https://github.com/dpizetta/wavy/issues) provided by GitHub. This is the correct way to keep us alert and how provide information about the development for you. Thanks in advance.
+If you find any problems in this program, please let us know using the [Issues System](https://github.com/dpizetta/wavy/issues) provided by GitHub. This is the correct way to keep us alert and how provide information about the development for you. Thanks in advance.
 
 ## About
 
@@ -64,10 +68,10 @@ Technicians
 * Cláudio Boense Bretas
 * Jae Antonio de Castro Filho
 
-# Dependencies
+## Dependencies
 
-* Python >= 2.7 < 3
-* PyQt4
+* Python 3.4+
+* PyQt5 or PySide2 or PyQt4 or PySide
 * pyqtgraph
 * numpy
 * PyAudio (also PortAudio)
@@ -88,12 +92,12 @@ To run wavy without installing, use
 
 ## Installing
 
-To install it, do the following
+To install it, do the following, inside main Wavy folder
 
-`$ python setup.py install`
+`$ pip install .`
 
 ## Installing as developer
 
 To install it as a developer, which means install it like a library but keeping it in the same place it is and providing the auto update if any changes are made.
 
-`$ python setup.py install develop`
+`$ pip install -e .`

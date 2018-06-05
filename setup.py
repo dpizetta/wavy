@@ -4,8 +4,8 @@
 import codecs
 import os
 import re
-from setuptools import setup
 
+from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,6 +24,7 @@ def read(*parts):
     # https://github.com/pypa/virtualenv/issues/201#issuecomment-3145690
     return codecs.open(os.path.join(here, *parts), 'r').read()
 
+
 long_description = read('README.md')
 classifiers = [
     'Development Status :: 4 - Beta',
@@ -33,23 +34,25 @@ classifiers = [
     'Operating System :: POSIX',
     'Programming Language :: Python']
 
-setup(name='Wavy',
-      version=find_version("wavy", "gui_wavy.py"),
+setup(name='WavyTool',
+      version=find_version("wavytool", "__init__.py"),
       description='Acquire sound from auxiliary/mic and save to dat',
+      url='https://github.com/dpizetta/wavy',
       long_description=long_description,
       author='Daniel Cosmo Pizetta',
       author_email='daniel.pizett@usp.br',
       classifiers=classifiers,
-      packages=['wavy',
-                'wavy.images'],
-      package_data={'data_wavy': ['README.md',
-                                  '*.png',
-                                  '*.ui']},
+      packages=['wavytool',
+                'wavytool.images'],
+      package_data={'data_wavytool': ['README.md',
+                                       '*.png',
+                                       '*.ui']},
       scripts=['run.py'],
       entry_points={
           "console_scripts": [
-              "wavy=run:main"
-          ],
-      }
-
+              "wavytool=run:main"]},
+      install_requires=['qtpy>=1.4',
+                        'numpy>=1.13',
+                        'pyqtgraph>=0.10',
+                        'pyaudio>=0.2']
       )

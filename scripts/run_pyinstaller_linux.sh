@@ -1,6 +1,6 @@
 python get_version.py
 
-NAME='Wavy'
+NAME='WavyTool'
 SYSTEM='linux'
 VERSION=$(head -n 1 'got_version.temp')
 DATE=`date +%Y%m%d%H%M`
@@ -24,7 +24,7 @@ pyinstaller ./run.py \
 	--log-level=INFO \
     --specpath=./dist \
 	--name=$EXECUTABLE -F  \
-	--icon=./wavy/images/symbol.ico 
+	--icon=./wavytool/images/symbol.ico 
 
 
 echo "Creating MD5 Checksum ..."

@@ -26,8 +26,8 @@ def read(*parts):
     return codecs.open(os.path.join(here, *parts), 'r').read()
 
 
-version=find_version("wavy", "gui_wavy.py")
-print version
+version=find_version("wavytool", "__init__.py")
+print(version)
 
 with open('got_version.temp', 'w') as f:
     f.write(version)

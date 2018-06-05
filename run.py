@@ -1,7 +1,9 @@
+#! python
+# -*- coding: utf-8 -*-
 
 import sys
 
-from wavy.gui_wavy import main
+from wavytool.gui_wavy import main
 
 
 if __name__ == '__main__':
