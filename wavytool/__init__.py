@@ -9,6 +9,6 @@ can perform some simple data processing as spectral analysis.
 
 app_name = "WavyTool"
 
-__version__ = "2.0"
+__version__ = "2.1"
 __all__ = ['images']
 
