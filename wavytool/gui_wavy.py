@@ -16,6 +16,7 @@ import collections
 import json
 import logging
 import os
+import sys
 import time
 import urllib.request
 
@@ -36,7 +37,7 @@ import pyqtgraph as pg
 
 # Then import the own interface
 from wavytool import __version__ as version
-from wavytool import __app_name__ as app_name
+from wavytool import app_name
 from wavytool.core_wavy import AudioRecord
 from wavytool.gui_wav2dat import ConvertWave2Data
 from wavytool.mw_wavy import Ui_MainWindow
@@ -47,22 +48,36 @@ logging.basicConfig(level=logging.DEBUG)
 logging.info('Using Qt binding (QtPy/PyQtGraph): %s', (os.environ['QT_API'],
                                                        os.environ['PYQTGRAPH_QT_LIB']))
 
+
 about = ("<h3>{} v.{}</h3>"
-         "<p>Authors:<br/>Daniel Cosmo Pizetta<br/>Wesley Daflita<br/><br/>Sao Carlos Institute of "
-         "Physics<br/>University of Sao Paulo</p><p>WavyTool is a simple program that allows you to acquire sound "
-         "from  mic and save as .csv or .png.<p>For more information and new versions, please, visit: "
-         "<a href='https://github.com/dpizetta/wavy'>WavyTool on GitHub</a>.</p><p>This software is under "
-         "<a href='http://choosealicense.com/licenses/mit/'>MIT</a> license. 2015.</p>").format(app_name, version)
+         "<p>&copy Daniel C. Pizetta, Wesley Daflita<br/>"
+         "Sao Carlos Institute of Physics<br/>"
+         "University of Sao Paulo<br/>"
+         "<a href='https://github.com/dpizetta/wavy'>WavyTool on GitHub</a><br/>"
+         "<a href='https://pypi.org/project/wavytool'>WavyTool on PyPI</a><br/>"
+         "<a href='http://choosealicense.com/licenses/mit'>MIT License</a><br/></p>").format(app_name, version)
 
 
-def main(argv):
+def main():
     """The main function."""
 
-    wavy = QApplication(argv)
+    args = sys.argv[1:]
+
+    wavy = QApplication(args)
     wavy.setApplicationVersion(version)
     wavy.setApplicationName(app_name)
     wavy.setOrganizationName("Sao Carlos Institute of Physics - University of Sao Paulo")
     wavy.setOrganizationDomain("www.ifsc.usp.br")
+
+    try:
+        import qdarkstyle
+    except ImportError:
+        logging.warning("No dark theme installed, use 'pip install qdarkstyle' to install.")
+    else:
+        try:
+            wavy.setStyleSheet(qdarkstyle.load_stylesheet_from_environment())
+        except Exception as err:
+            logging.warning("Problems using qdarkstyle.\nError: %s", str(err))
 
     pixmap = QPixmap("wavytool/images/symbol.png")
     splash = QSplashScreen(pixmap)
@@ -74,7 +89,7 @@ def main(argv):
     splash.showMessage("Loading...")
     wavy.processEvents()
 
-    while time.time() - start < 2:
+    while time.time() - start < 1:
         time.sleep(0.001)
         wavy.processEvents()
         splash.showMessage("Starting...")
@@ -534,7 +549,7 @@ class MainWindow(QMainWindow):
         answer = QMessageBox.question(self,
                                       self.tr('Question'),
                                       self.tr('It seems the first time you run WavyTool. Do you want to choose '
-                                              'a folder to save future data?.'),
+                                              'a folder to keep exported data?'),
                                       QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
             path = QFileDialog.getExistingDirectory(self,

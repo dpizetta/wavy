@@ -34,9 +34,9 @@ classifiers = [
     'Operating System :: POSIX',
     'Programming Language :: Python']
 
-setup(name='WavyTool',
+setup(name='wavytool',
       version=find_version("wavytool", "__init__.py"),
-      description='Acquire sound from auxiliary/mic and save to dat',
+      description='Simple GUI that acquires data from input devices, plot and export files.',
       url='https://github.com/dpizetta/wavy',
       long_description=long_description,
       author='Daniel Cosmo Pizetta',
@@ -44,13 +44,12 @@ setup(name='WavyTool',
       classifiers=classifiers,
       packages=['wavytool',
                 'wavytool.images'],
-      package_data={'data_wavytool': ['README.md',
+      package_data={'wavytool_data': ['README.md',
                                        '*.png',
                                        '*.ui']},
-      scripts=['run.py'],
       entry_points={
-          "console_scripts": [
-              "wavytool=run:main"]},
+          "gui_scripts": [
+              "wavytool=wavytool.__main__:main"]},
       install_requires=['qtpy>=1.4',
                         'numpy>=1.13',
                         'pyqtgraph>=0.10',
